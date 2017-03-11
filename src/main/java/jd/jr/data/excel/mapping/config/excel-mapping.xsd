@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema xmlns="http://jr.jd.com/schema/excel-mapping"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://jr.jd.com/schema/excel-mapping"
+            elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xsd:element name="excel-mapping">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element ref="sheet"/>
+                </xsd:choice>
+            </xsd:sequence>
+            <xsd:attribute name="version" type="excelVersion" default="hssf"/>
+        </xsd:complexType>
+
+    </xsd:element>
+
+    <xsd:element name="sheet">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element name="field">
+                        <xsd:complexType>
+                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                            <xsd:attribute name="title" type="xsd:string" use="required"/>
+                            <xsd:attribute name="width" type="xsd:int"/>
+                            <xsd:attribute name="align" default="center">
+                                <xsd:simpleType>
+                                    <!--通过限制定义自动包装的枚举类型-->
+                                    <xsd:restriction base="xsd:string">
+                                        <xsd:enumeration value="left"/>
+                                        <xsd:enumeration value="right"/>
+                                        <xsd:enumeration value="center"/>
+                                    </xsd:restriction>
+                                </xsd:simpleType>
+                            </xsd:attribute>
+                            <xsd:attribute name="locked" type="xsd:boolean" default="false"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:string"/>
+            <xsd:attribute name="name" type="xsd:string"/>
+            <xsd:attribute name="enableStyle" type="xsd:boolean" default="false"/>
+            <xsd:attribute name="version" type="excelVersion" default="hssf"/>
+            <xsd:attribute name="class" type="xsd:string" use="required">
+                <xsd:annotation>
+                    <xsd:documentation source="java:java.lang.Class">
+                        <![CDATA[
+                        Sheet的映射类定义
+				        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:simpleType name="excelVersion">
+        <!--定义excel版本枚举类型-->
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="hssf"/>
+            <xsd:enumeration value="xssf"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>
