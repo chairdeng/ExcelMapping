@@ -213,10 +213,76 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         sheet.setDefaultColumnWidth(sheetDefinition.getDefaultColumnWidth());
         List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
 
+        //写入标题行
+        Row titleRow = createTitleRow(sheet,sheetDefinition);
+
+        //写入内容行
+        for(E bean:beans){
+            if(!bean.getClass().isAssignableFrom(mappingType)){
+                throw new DefinitionException("配置中定义的类型与所输入的类型不为同一类型，或其子类！");
+            }
+            Row contextRow = createContextRow(bean,workbook,sheet,fieldDefinitions);
+
+        }
+    }
+    protected Row createContextRow(E bean,Workbook workbook,Sheet sheet,List<FieldDefinition> fieldDefinitions){
+        int cellIndex = 0;
+        Row contextRow = sheet.createRow(sheet.getLastRowNum()+1);
+
+        for(FieldDefinition fieldDefinition:fieldDefinitions){
+            Cell cell = contextRow.createCell(cellIndex++);
+            Class<?> clazz = bean.getClass();
+
+            try {
+                Field field = clazz.getDeclaredField(fieldDefinition.getName());
+                setCellValue(bean,field,workbook,cell);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        cellIndex = 0;
+        return contextRow;
+    }
+    private void setCellValue(E bean,Field field,Workbook workbook,Cell cell) throws IllegalAccessException {
+        field.setAccessible(true);
+        Class fieldType = field.getType();
+        if (fieldType.isAssignableFrom(String.class)) {
+            cell.setCellType(Cell.CELL_TYPE_STRING);
+            cell.setCellValue((String) field.get(bean));
+        }
+        if ((fieldType.isAssignableFrom(Boolean.class) || fieldType.isAssignableFrom(boolean.class))) {
+            cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+            cell.setCellValue(field.getBoolean(bean));
+        }
+        if (fieldType.isAssignableFrom(Date.class)) {
+            CellStyle cellStyle = workbook.createCellStyle();
+            DataFormat dataFormat = workbook.createDataFormat();
+            cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
+            cell.setCellStyle(cellStyle);
+            cell.setCellValue((Date) field.get(bean));
+        }
+        if (fieldType.isAssignableFrom(Integer.class) || fieldType.isAssignableFrom(int.class)) {
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(field.getInt(bean));
+        } else if(fieldType.isAssignableFrom(BigDecimal.class)){
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(((BigDecimal)field.get(bean)).doubleValue());
+        } else if(fieldType.isAssignableFrom(Float.class) || fieldType.isAssignableFrom(float.class)){
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(field.getFloat(bean));
+        } else if (fieldType.isAssignableFrom(Double.class) || fieldType.isAssignableFrom(double.class)) {
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(field.getDouble(bean));
+        }
+    }
+    protected Row createTitleRow(Sheet sheet,SheetDefinition sheetDefinition){
+        //写入标题行
+        List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
         int rowIndex = 0;
         int cellIndex = 0;
-        //写入标题行
-        Row titleRow = sheet.createRow(rowIndex++);
+        Row titleRow = sheet.createRow(rowIndex);
         for(FieldDefinition fieldDefinition:fieldDefinitions){
             Cell cell = titleRow.createCell(cellIndex);
             cell.setCellValue(fieldDefinition.getTitle());
@@ -226,57 +292,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             }
             cellIndex++;
         }
-        cellIndex = 0;
-        //写入内容行
-        for(E bean:beans){
-            Row contextRow = sheet.createRow(rowIndex++);
-            for(FieldDefinition fieldDefinition:fieldDefinitions){
-                Cell cell = contextRow.createCell(cellIndex++);
-                Class<?> clazz = bean.getClass();
-                if(!clazz.isAssignableFrom(mappingType)){
-                    throw new DefinitionException("配置中定义的类型与所输入的类型不为同一类型，或其子类！");
-                }
-                try {
-                    Field field = clazz.getDeclaredField(fieldDefinition.getName());
-                    field.setAccessible(true);
-                    Class fieldType = field.getType();
-                    if (fieldType.isAssignableFrom(String.class)) {
-                        cell.setCellType(Cell.CELL_TYPE_STRING);
-                        cell.setCellValue((String) field.get(bean));
-                    }
-                    if ((fieldType.isAssignableFrom(Boolean.class) || fieldType.isAssignableFrom(boolean.class))) {
-                        cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-                        cell.setCellValue(field.getBoolean(bean));
-                    }
-                    if (fieldType.isAssignableFrom(Date.class)) {
-                        CellStyle cellStyle = workbook.createCellStyle();
-                        DataFormat dataFormat = workbook.createDataFormat();
-                        cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
-                        cell.setCellStyle(cellStyle);
-                        cell.setCellValue((Date) field.get(bean));
-                    }
-
-                    if (fieldType.isAssignableFrom(Integer.class) || fieldType.isAssignableFrom(int.class)) {
-                        cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                        cell.setCellValue(field.getInt(bean));
-                    } else if(fieldType.isAssignableFrom(BigDecimal.class)){
-                        cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                        cell.setCellValue(((BigDecimal)field.get(bean)).doubleValue());
-                    } else if(fieldType.isAssignableFrom(Float.class) || fieldType.isAssignableFrom(float.class)){
-                        cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                        cell.setCellValue(field.getFloat(bean));
-                    } else if (fieldType.isAssignableFrom(Double.class) || fieldType.isAssignableFrom(double.class)) {
-                        cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                        cell.setCellValue(field.getDouble(bean));
-                    }
-                } catch (NoSuchFieldException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-            cellIndex = 0;
-        }
+        return titleRow;
     }
     /**
      * 将beans中的数据按照配置写入sheet
@@ -289,9 +305,6 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         write(beans,workbook,0);
 
     }
-
-
-
     /**
      * 将beans数据写入到Excel输出流中，默认写入第一个Sheet
      *
@@ -350,7 +363,6 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             throw new MappingException("文件不可为null");
         }
 
-
         try {
             OutputStream outputStream = new FileOutputStream(file);
             write(beans,outputStream,sheetIndex);
@@ -367,11 +379,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     public void write(List<E> beans, File file) {
         write(beans,file,0);
-
     }
-
-
-
     /**
      * 创建一个无配置的SheetMapping
      *

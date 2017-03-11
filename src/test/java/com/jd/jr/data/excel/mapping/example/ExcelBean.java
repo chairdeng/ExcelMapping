@@ -2,8 +2,8 @@ package com.jd.jr.data.excel.mapping.example;
 
 
 
-import jd.jr.data.excel.mapping.annotation.ExcelField;
-import jd.jr.data.excel.mapping.annotation.ExcelSheet;
+import com.jd.jr.data.excel.mapping.annotation.ExcelField;
+import com.jd.jr.data.excel.mapping.annotation.ExcelSheet;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -27,7 +27,7 @@ public class ExcelBean {
     private boolean booleanField;
     @ExcelField(title = "Date")
     private Date dateField;
-    @ExcelField(title = "BigDecimal")
+    @ExcelField(title = "BigDecimal",width = 20)
     private BigDecimal bigDecimalField;
 
     public String getStringField() {

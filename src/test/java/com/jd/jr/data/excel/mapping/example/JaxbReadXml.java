@@ -1,20 +1,15 @@
 package com.jd.jr.data.excel.mapping.example;
 
-import jd.jr.data.excel.mapping.definition.ExcelMappingDefinition;
-import jd.jr.data.excel.mapping.definition.FieldDefinition;
-import jd.jr.data.excel.mapping.definition.SheetDefinition;
+import com.jd.jr.data.excel.mapping.definition.ExcelMappingDefinition;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * *****************************************

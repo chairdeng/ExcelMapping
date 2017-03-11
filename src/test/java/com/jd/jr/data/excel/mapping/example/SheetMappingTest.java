@@ -1,9 +1,7 @@
 package com.jd.jr.data.excel.mapping.example;
 
-import jd.jr.data.excel.mapping.ExcelMapping;
-import jd.jr.data.excel.mapping.ExcelMappingHandler;
-import jd.jr.data.excel.mapping.SheetMapping;
-import jd.jr.data.excel.mapping.SheetMappingHandler;
+import com.jd.jr.data.excel.mapping.SheetMapping;
+import com.jd.jr.data.excel.mapping.SheetMappingHandler;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -24,7 +22,7 @@ public class SheetMappingTest {
         SheetMapping<ExcelBean> sheetMapping = SheetMappingHandler.newInstance(ExcelBean.class);
         List<ExcelBean> beans = new ArrayList<ExcelBean>();
         ExcelBean excelBean;
-        for(int i=0;i<=10;i++){
+        for(int i=0;i<10;i++){
             excelBean = new ExcelBean();
             excelBean.setBigDecimalField(new BigDecimal("22.333"));
             if(i%2>0)
@@ -33,7 +31,8 @@ public class SheetMappingTest {
                 excelBean.setBooleanField(false);
             excelBean.setStringField("12312312");
             excelBean.setDateField(new Date());
-            excelBean.setIntField(12);
+            excelBean.setIntField(i);
+            excelBean.setDoubleField(22.33);
             beans.add(excelBean);
         }
         sheetMapping.write(beans,file);

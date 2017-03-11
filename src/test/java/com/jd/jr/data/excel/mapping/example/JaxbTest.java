@@ -1,20 +1,13 @@
 package com.jd.jr.data.excel.mapping.example;
 
-import com.sun.xml.internal.ws.util.xml.XmlUtil;
-import jd.jr.data.excel.mapping.definition.ExcelMappingDefinition;
-import jd.jr.data.excel.mapping.definition.FieldDefinition;
-import jd.jr.data.excel.mapping.definition.SheetDefinition;
-import jd.jr.data.excel.mapping.utils.JAXBUtils;
+import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
+import com.jd.jr.data.excel.mapping.utils.JAXBUtils;
 import org.xml.sax.SAXException;
 
-import javax.annotation.Resource;
 import javax.xml.bind.JAXBException;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * *****************************************
