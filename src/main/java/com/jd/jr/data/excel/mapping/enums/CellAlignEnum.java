@@ -1,4 +1,4 @@
-package jd.jr.data.excel.mapping.enums;
+package com.jd.jr.data.excel.mapping.enums;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;

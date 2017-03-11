@@ -1,4 +1,4 @@
-package jd.jr.data.excel.mapping.config;
+package com.jd.jr.data.excel.mapping.config;
 
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.bind.annotation.adapters.XmlAdapter;

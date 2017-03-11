@@ -1,4 +1,4 @@
-package jd.jr.data.excel.mapping.utils;
+package com.jd.jr.data.excel.mapping.utils;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -21,7 +21,7 @@ public class SheetUtils {
      * @return
      */
     public static Map<String,Integer> getSheetTitles(Sheet sheet, int rowIndex){
-        Row titleRow = sheet.getRow(0);
+        Row titleRow = sheet.getRow(rowIndex);
         Map<String,Integer> titles = new HashMap<String, Integer>();
         for (int i = 0; i < titleRow.getPhysicalNumberOfCells(); i++) {
             titles.put(titleRow.getCell(i).getStringCellValue(),i);

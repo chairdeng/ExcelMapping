@@ -1,6 +1,5 @@
-package jd.jr.data.excel.mapping;
+package com.jd.jr.data.excel.mapping;
 
-import jd.jr.data.excel.mapping.definition.SheetDefinition;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;

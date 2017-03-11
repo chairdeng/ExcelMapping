@@ -1,7 +1,7 @@
-package jd.jr.data.excel.mapping.definition;
+package com.jd.jr.data.excel.mapping.definition;
 
-import jd.jr.data.excel.mapping.config.StringClassTypeAdapter;
-import jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
+import com.jd.jr.data.excel.mapping.config.StringClassTypeAdapter;
+import com.jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -36,6 +36,8 @@ public class SheetDefinition {
 
     @XmlAttribute
     private ExcelVersionEnum version;
+    @XmlAttribute
+    private int defaultColumnWidth = 10;
 
     @XmlTransient
     private int order;
@@ -86,6 +88,14 @@ public class SheetDefinition {
 
     public void setEnableStyle(boolean enableStyle) {
         this.enableStyle = enableStyle;
+    }
+
+    public int getDefaultColumnWidth() {
+        return defaultColumnWidth;
+    }
+
+    public void setDefaultColumnWidth(int defaultColumnWidth) {
+        this.defaultColumnWidth = defaultColumnWidth;
     }
 
     public Class getClazz() {

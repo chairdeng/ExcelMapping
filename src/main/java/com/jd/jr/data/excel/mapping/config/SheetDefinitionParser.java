@@ -1,11 +1,11 @@
-package jd.jr.data.excel.mapping.config;
+package com.jd.jr.data.excel.mapping.config;
 
-import jd.jr.data.excel.mapping.annotation.ExcelField;
-import jd.jr.data.excel.mapping.annotation.ExcelSheet;
-import jd.jr.data.excel.mapping.definition.FieldDefinition;
-import jd.jr.data.excel.mapping.definition.SheetDefinition;
-import jd.jr.data.excel.mapping.exceptions.DefinitionException;
-import jd.jr.data.excel.mapping.utils.JAXBUtils;
+import com.jd.jr.data.excel.mapping.annotation.ExcelField;
+import com.jd.jr.data.excel.mapping.annotation.ExcelSheet;
+import com.jd.jr.data.excel.mapping.definition.FieldDefinition;
+import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
+import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
+import com.jd.jr.data.excel.mapping.utils.JAXBUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -62,6 +62,7 @@ public class SheetDefinitionParser {
             sheetDefinition.setName(excelSheet.name());
             sheetDefinition.setEnableStyle(excelSheet.enableStyle());
             sheetDefinition.setVersion(excelSheet.version());
+            sheetDefinition.setDefaultColumnWidth(excelSheet.defaultColumnWidth());
         }
         Field[] fields = clazz.getDeclaredFields();
         List<FieldDefinition> fieldDefinitions = new ArrayList<FieldDefinition>();
@@ -76,6 +77,8 @@ public class SheetDefinitionParser {
                 fieldDefinition.setTitle(excelField.title());
                 fieldDefinition.setWidth(excelField.width());
                 fieldDefinition.setAlign(excelField.align());
+                fieldDefinition.setFormat(excelField.format());
+                fieldDefinition.setFormatter(excelField.formatter());
                 if(excelField.order() == 0){
                     fieldDefinition.setOrder(i);
                 }else {

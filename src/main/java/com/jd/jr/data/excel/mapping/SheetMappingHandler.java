@@ -1,20 +1,20 @@
-package jd.jr.data.excel.mapping;
+package com.jd.jr.data.excel.mapping;
 
-import jd.jr.data.excel.mapping.config.SheetDefinitionParser;
-import jd.jr.data.excel.mapping.definition.FieldDefinition;
-import jd.jr.data.excel.mapping.definition.SheetDefinition;
-import jd.jr.data.excel.mapping.exceptions.DefinitionException;
-import jd.jr.data.excel.mapping.exceptions.MappingException;
-import jd.jr.data.excel.mapping.utils.SheetUtils;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
+import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
+import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
+import com.jd.jr.data.excel.mapping.utils.SheetUtils;
+import com.jd.jr.data.excel.mapping.config.SheetDefinitionParser;
+import com.jd.jr.data.excel.mapping.definition.FieldDefinition;
+import com.jd.jr.data.excel.mapping.exceptions.MappingException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -210,23 +210,28 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         else {
             sheet = workbook.createSheet(sheetDefinition.getName());
         }
-
+        sheet.setDefaultColumnWidth(sheetDefinition.getDefaultColumnWidth());
         List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
 
         int rowIndex = 0;
         int cellIndex = 0;
         //写入标题行
-        Row titleRow = sheet.createRow(++rowIndex);
+        Row titleRow = sheet.createRow(rowIndex++);
         for(FieldDefinition fieldDefinition:fieldDefinitions){
-            Cell cell = titleRow.createCell(++cellIndex);
+            Cell cell = titleRow.createCell(cellIndex);
             cell.setCellValue(fieldDefinition.getTitle());
+            int columnWidth = fieldDefinition.getWidth();
+            if(columnWidth>0) {
+                sheet.setColumnWidth(cellIndex, columnWidth * 256);
+            }
+            cellIndex++;
         }
         cellIndex = 0;
         //写入内容行
         for(E bean:beans){
-            Row contextRow = sheet.createRow(++rowIndex);
+            Row contextRow = sheet.createRow(rowIndex++);
             for(FieldDefinition fieldDefinition:fieldDefinitions){
-                Cell cell = contextRow.createCell(++cellIndex);
+                Cell cell = contextRow.createCell(cellIndex++);
                 Class<?> clazz = bean.getClass();
                 if(!clazz.isAssignableFrom(mappingType)){
                     throw new DefinitionException("配置中定义的类型与所输入的类型不为同一类型，或其子类！");
@@ -244,6 +249,10 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
                         cell.setCellValue(field.getBoolean(bean));
                     }
                     if (fieldType.isAssignableFrom(Date.class)) {
+                        CellStyle cellStyle = workbook.createCellStyle();
+                        DataFormat dataFormat = workbook.createDataFormat();
+                        cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
+                        cell.setCellStyle(cellStyle);
                         cell.setCellValue((Date) field.get(bean));
                     }
 
@@ -341,19 +350,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             throw new MappingException("文件不可为null");
         }
 
-        if(!file.exists()){
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        if(!file.isFile()){
-            throw new MappingException("不是一个文件！");
-        }
-        if(!file.canWrite()){
-            throw new MappingException("文件不可写入！");
-        }
+
         try {
             OutputStream outputStream = new FileOutputStream(file);
             write(beans,outputStream,sheetIndex);

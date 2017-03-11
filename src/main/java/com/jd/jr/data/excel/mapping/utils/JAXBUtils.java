@@ -1,4 +1,4 @@
-package jd.jr.data.excel.mapping.utils;
+package com.jd.jr.data.excel.mapping.utils;
 
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;

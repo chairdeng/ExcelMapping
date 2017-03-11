@@ -1,13 +1,10 @@
-package jd.jr.data.excel.mapping.config;
+package com.jd.jr.data.excel.mapping.config;
 
-import jd.jr.data.excel.mapping.definition.ExcelMappingDefinition;
-import jd.jr.data.excel.mapping.definition.SheetDefinition;
-import jd.jr.data.excel.mapping.exceptions.DefinitionException;
-import jd.jr.data.excel.mapping.utils.JAXBUtils;
-import org.xml.sax.SAXException;
+import com.jd.jr.data.excel.mapping.definition.ExcelMappingDefinition;
+import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
+import com.jd.jr.data.excel.mapping.utils.JAXBUtils;
 
 
-import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

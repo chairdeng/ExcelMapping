@@ -1,6 +1,6 @@
-package jd.jr.data.excel.mapping.definition;
+package com.jd.jr.data.excel.mapping.definition;
 
-import jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
+import com.jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
 
 import javax.xml.bind.annotation.*;
 import java.util.List;

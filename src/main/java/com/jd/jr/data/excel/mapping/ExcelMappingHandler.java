@@ -1,4 +1,4 @@
-package jd.jr.data.excel.mapping;
+package com.jd.jr.data.excel.mapping;
 
 /**
  * *****************************************

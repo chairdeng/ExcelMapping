@@ -1,8 +1,9 @@
-package jd.jr.data.excel.mapping.annotation;
+package com.jd.jr.data.excel.mapping.annotation;
 
 
 
-import jd.jr.data.excel.mapping.enums.CellAlignEnum;
+import com.jd.jr.data.excel.mapping.enums.CellAlignEnum;
+import com.jd.jr.data.excel.mapping.format.SimpleMappingFormatter;
 
 import java.lang.annotation.*;
 
@@ -27,7 +28,7 @@ public @interface ExcelField {
      * 宽度
      * @return
      */
-    int width() default 20;
+    int width() default 0;
 
     /**
      * 是否锁定列
@@ -46,4 +47,8 @@ public @interface ExcelField {
      * @return
      */
     int order() default 0;
+
+    String format() default "";
+
+    Class formatter() default SimpleMappingFormatter.class;
 }

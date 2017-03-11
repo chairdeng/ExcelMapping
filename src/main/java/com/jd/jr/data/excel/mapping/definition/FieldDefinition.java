@@ -1,8 +1,10 @@
-package jd.jr.data.excel.mapping.definition;
+package com.jd.jr.data.excel.mapping.definition;
 
-import jd.jr.data.excel.mapping.enums.CellAlignEnum;
+import com.jd.jr.data.excel.mapping.enums.CellAlignEnum;
+import com.jd.jr.data.excel.mapping.config.StringClassTypeAdapter;
 
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -29,6 +31,12 @@ public class FieldDefinition implements Comparable<FieldDefinition>{
     private CellAlignEnum align;
     @XmlAttribute
     private boolean locked;
+    @XmlAttribute
+    private String format;
+
+    @XmlAttribute(name = "formatter",required = true)
+    @XmlJavaTypeAdapter(StringClassTypeAdapter.class)
+    private Class formatter;
 
     public String getName() {
         return name;
@@ -78,6 +86,21 @@ public class FieldDefinition implements Comparable<FieldDefinition>{
         this.locked = locked;
     }
 
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
+    public Class getFormatter() {
+        return formatter;
+    }
+
+    public void setFormatter(Class formatter) {
+        this.formatter = formatter;
+    }
 
     public int compareTo(FieldDefinition o) {
         return 0;
