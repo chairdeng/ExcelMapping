@@ -1,11 +1,13 @@
 package com.jd.jr.data.excel.mapping;
 
-import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
-import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
-import com.jd.jr.data.excel.mapping.utils.SheetUtils;
 import com.jd.jr.data.excel.mapping.config.SheetDefinitionParser;
 import com.jd.jr.data.excel.mapping.definition.FieldDefinition;
+import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
+import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
 import com.jd.jr.data.excel.mapping.exceptions.MappingException;
+import com.jd.jr.data.excel.mapping.format.MappingFormatter;
+import com.jd.jr.data.excel.mapping.format.SimpleMappingFormatter;
+import com.jd.jr.data.excel.mapping.utils.SheetUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
@@ -235,18 +237,32 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
 
             try {
                 Field field = clazz.getDeclaredField(fieldDefinition.getName());
-                setCellValue(bean,field,workbook,cell);
+                setCellValue(bean,field,fieldDefinition,workbook,cell);
             } catch (NoSuchFieldException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
                 e.printStackTrace();
             }
         }
         cellIndex = 0;
         return contextRow;
     }
-    private void setCellValue(E bean,Field field,Workbook workbook,Cell cell) throws IllegalAccessException {
+    private void setCellValue(E bean,Field field,FieldDefinition fieldDefinition,Workbook workbook,Cell cell) throws IllegalAccessException, InstantiationException {
         field.setAccessible(true);
+        Class<?> formatterClass = fieldDefinition.getFormatter();
+
+        if(formatterClass.isAssignableFrom(MappingFormatter.class)){
+            MappingFormatter formatter = (MappingFormatter) formatterClass.newInstance();
+
+            if(formatterClass == SimpleMappingFormatter.class){
+                String format = fieldDefinition.getFormat();
+                ((SimpleMappingFormatter)formatter).setFormat(format);
+            }
+            Object cellValue = formatter.toExcel(field.get(bean), fieldDefinition);
+        }
+
         Class fieldType = field.getType();
         if (fieldType.isAssignableFrom(String.class)) {
             cell.setCellType(Cell.CELL_TYPE_STRING);
