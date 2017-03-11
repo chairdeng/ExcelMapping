@@ -36,6 +36,7 @@ public class SheetDefinition {
 
     @XmlAttribute
     private ExcelVersionEnum version;
+
     @XmlAttribute
     private int defaultColumnWidth = 10;
 

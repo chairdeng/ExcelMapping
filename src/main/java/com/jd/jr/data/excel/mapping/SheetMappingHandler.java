@@ -301,9 +301,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      * @param workbook 写入的目标，如果为null则在写入时创建
      */
     public void write(List<E> beans, Workbook workbook) {
-
         write(beans,workbook,0);
-
     }
     /**
      * 将beans数据写入到Excel输出流中，默认写入第一个Sheet
@@ -312,9 +310,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      * @param outputStream 写入的目标输出流，如果为null则在写入时创建FileOutputStream
      */
     public void write(List<E> beans, OutputStream outputStream) {
-
         write(beans,outputStream,0);
-
     }
 
     /**
@@ -431,9 +427,5 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         SheetDefinition sheetDefinition = sheetDefinitionParser.parse(file);
         return new SheetMappingHandler<E>(sheetDefinition);
     }
-
-
-
-
 
 }
