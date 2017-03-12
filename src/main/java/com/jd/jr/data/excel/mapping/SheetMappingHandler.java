@@ -5,8 +5,8 @@ import com.jd.jr.data.excel.mapping.definition.FieldDefinition;
 import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
 import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
 import com.jd.jr.data.excel.mapping.exceptions.MappingException;
-import com.jd.jr.data.excel.mapping.format.MappingFormatter;
-import com.jd.jr.data.excel.mapping.format.SimpleMappingFormatter;
+import com.jd.jr.data.excel.mapping.format.FieldMappingFormatter;
+import com.jd.jr.data.excel.mapping.format.SimpleFieldMappingFormatter;
 import com.jd.jr.data.excel.mapping.utils.SheetUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -227,6 +227,15 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
 
         }
     }
+
+    /**
+     * 创建内容行
+     * @param bean 行内容bean
+     * @param workbook
+     * @param sheet
+     * @param fieldDefinitions
+     * @return
+     */
     protected Row createContextRow(E bean,Workbook workbook,Sheet sheet,List<FieldDefinition> fieldDefinitions){
         int cellIndex = 0;
         Row contextRow = sheet.createRow(sheet.getLastRowNum()+1);
@@ -253,14 +262,45 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         field.setAccessible(true);
         Class<?> formatterClass = fieldDefinition.getFormatter();
 
-        if(formatterClass.isAssignableFrom(MappingFormatter.class)){
-            MappingFormatter formatter = (MappingFormatter) formatterClass.newInstance();
+        if(FieldMappingFormatter.class.isAssignableFrom(formatterClass)){
+            FieldMappingFormatter formatter = (FieldMappingFormatter) formatterClass.newInstance();
 
-            if(formatterClass == SimpleMappingFormatter.class){
+            if(formatterClass == SimpleFieldMappingFormatter.class){
                 String format = fieldDefinition.getFormat();
-                ((SimpleMappingFormatter)formatter).setFormat(format);
+                ((SimpleFieldMappingFormatter)formatter).setFormat(format);
             }
-            Object cellValue = formatter.toExcel(field.get(bean), fieldDefinition);
+            Object cellValue = formatter.toExcelValue(field.get(bean), fieldDefinition);
+            if(cellValue != null){
+                if (cellValue instanceof String) {
+                    cell.setCellType(Cell.CELL_TYPE_STRING);
+                    cell.setCellValue((String) cellValue);
+                }
+                if (cellValue instanceof Boolean) {
+                    cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+                    cell.setCellValue(field.getBoolean(cellValue));
+                }
+                if (cellValue instanceof Date) {
+                    CellStyle cellStyle = workbook.createCellStyle();
+                    DataFormat dataFormat = workbook.createDataFormat();
+                    cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
+                    cell.setCellStyle(cellStyle);
+                    cell.setCellValue((Date) cellValue);
+                }
+                if (cellValue instanceof Integer) {
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue((Integer)cellValue);
+                } else if(cellValue instanceof BigDecimal){
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue(((BigDecimal)cellValue).doubleValue());
+                } else if(cellValue instanceof Float){
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue((Float)cellValue);
+                } else if (cellValue instanceof Double) {
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue((Double)cellValue);
+                }
+                return;
+            }
         }
 
         Class fieldType = field.getType();

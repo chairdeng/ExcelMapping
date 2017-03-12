@@ -15,7 +15,7 @@ import java.util.Date;
  * @date 2017/3/3 11:24
  * *****************************************
  */
-@ExcelSheet
+@ExcelSheet(name = "中文测试Sheet")
 public class ExcelBean {
     @ExcelField(title = "String")
     private String stringField;
@@ -23,7 +23,7 @@ public class ExcelBean {
     private int intField;
     @ExcelField(title = "Double")
     private double doubleField;
-    @ExcelField(title = "Boolean")
+    @ExcelField(title = "Boolean",format = "[true:'真',false:'假']")
     private boolean booleanField;
     @ExcelField(title = "Date")
     private Date dateField;

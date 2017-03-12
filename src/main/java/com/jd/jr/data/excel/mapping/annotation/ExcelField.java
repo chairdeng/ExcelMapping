@@ -3,7 +3,7 @@ package com.jd.jr.data.excel.mapping.annotation;
 
 
 import com.jd.jr.data.excel.mapping.enums.CellAlignEnum;
-import com.jd.jr.data.excel.mapping.format.SimpleMappingFormatter;
+import com.jd.jr.data.excel.mapping.format.SimpleFieldMappingFormatter;
 
 import java.lang.annotation.*;
 
@@ -50,5 +50,5 @@ public @interface ExcelField {
 
     String format() default "";
 
-    Class formatter() default SimpleMappingFormatter.class;
+    Class formatter() default SimpleFieldMappingFormatter.class;
 }
