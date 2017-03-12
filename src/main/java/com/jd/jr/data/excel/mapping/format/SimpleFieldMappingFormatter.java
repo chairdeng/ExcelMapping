@@ -16,7 +16,7 @@ public class SimpleFieldMappingFormatter implements FieldMappingFormatter<Object
     private Map<Object,Object> map;
     private boolean parsed = false;
     private void parseFormat(String format){
-        if(!parsed) {
+        if(!parsed) {//保证只执行一次
             map = (Map) shell.evaluate(format);
             if (map != null) {
                 List<Object> keyList = new ArrayList();
