@@ -260,17 +260,10 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
     }
     private void setCellValue(E bean,Field field,FieldDefinition fieldDefinition,Workbook workbook,Cell cell) throws IllegalAccessException, InstantiationException {
         field.setAccessible(true);
-        Class<?> formatterClass = fieldDefinition.getFormatter();
-
-        if(FieldMappingFormatter.class.isAssignableFrom(formatterClass)){
-            FieldMappingFormatter formatter = (FieldMappingFormatter) formatterClass.newInstance();
-
-            if(formatterClass == SimpleFieldMappingFormatter.class){
-                String format = fieldDefinition.getFormat();
-                ((SimpleFieldMappingFormatter)formatter).setFormat(format);
-            }
+        FieldMappingFormatter formatter = fieldDefinition.getFormatterInstance();
+        if(formatter != null) {
             Object cellValue = formatter.toExcelValue(field.get(bean), fieldDefinition);
-            if(cellValue != null){
+            if (cellValue != null) {
                 if (cellValue instanceof String) {
                     cell.setCellType(Cell.CELL_TYPE_STRING);
                     cell.setCellValue((String) cellValue);
@@ -288,16 +281,16 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
                 }
                 if (cellValue instanceof Integer) {
                     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue((Integer)cellValue);
-                } else if(cellValue instanceof BigDecimal){
+                    cell.setCellValue((Integer) cellValue);
+                } else if (cellValue instanceof BigDecimal) {
                     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(((BigDecimal)cellValue).doubleValue());
-                } else if(cellValue instanceof Float){
+                    cell.setCellValue(((BigDecimal) cellValue).doubleValue());
+                } else if (cellValue instanceof Float) {
                     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue((Float)cellValue);
+                    cell.setCellValue((Float) cellValue);
                 } else if (cellValue instanceof Double) {
                     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue((Double)cellValue);
+                    cell.setCellValue((Double) cellValue);
                 }
                 return;
             }
@@ -340,6 +333,24 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         int cellIndex = 0;
         Row titleRow = sheet.createRow(rowIndex);
         for(FieldDefinition fieldDefinition:fieldDefinitions){
+            Class<?> formatterClass = fieldDefinition.getFormatter();
+
+            if(FieldMappingFormatter.class.isAssignableFrom(formatterClass)) {
+                FieldMappingFormatter formatter = null;
+                try {
+                    formatter = (FieldMappingFormatter) formatterClass.newInstance();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                String format = fieldDefinition.getFormat();
+                if (formatterClass == SimpleFieldMappingFormatter.class && format != null && !"".equals(format)) {
+
+                    ((SimpleFieldMappingFormatter) formatter).setFormat(format);
+                }
+                fieldDefinition.setFormatterInstance(formatter);
+            }
             Cell cell = titleRow.createCell(cellIndex);
             cell.setCellValue(fieldDefinition.getTitle());
             int columnWidth = fieldDefinition.getWidth();
