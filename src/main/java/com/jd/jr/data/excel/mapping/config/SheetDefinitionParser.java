@@ -5,6 +5,7 @@ import com.jd.jr.data.excel.mapping.annotation.ExcelSheet;
 import com.jd.jr.data.excel.mapping.definition.FieldDefinition;
 import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
 import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
+import com.jd.jr.data.excel.mapping.format.FieldMappingFormatter;
 import com.jd.jr.data.excel.mapping.utils.JAXBUtils;
 
 import java.io.*;
@@ -50,6 +51,7 @@ public class SheetDefinitionParser {
         if(sheetDefinition.getFieldDefinitions() == null || sheetDefinition.getFieldDefinitions().size()==0){
             throw new DefinitionException("XML定义错误，不能从XML中获取有效的字段定义配置！");
         }
+        parseFormatter(sheetDefinition);
         return sheetDefinition;
     }
     public SheetDefinition parse(Class<?> clazz){
@@ -94,6 +96,22 @@ public class SheetDefinitionParser {
         if(sheetDefinition.getFieldDefinitions() == null || sheetDefinition.getFieldDefinitions().size()==0){
             throw new DefinitionException("注解配置错误，不能从该类中获取有效的字段定义！");
         }
+        parseFormatter(sheetDefinition);
         return sheetDefinition;
+    }
+    private void parseFormatter(SheetDefinition sheetDefinition){
+        List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
+        for(FieldDefinition fieldDefinition:fieldDefinitions){
+            try {
+                Class<?> formatterClass = fieldDefinition.getFormatter();
+                if(FieldMappingFormatter.class.isAssignableFrom(formatterClass)) {
+                    fieldDefinition.setFormatterInstance((FieldMappingFormatter) fieldDefinition.getFormatter().newInstance());
+                }
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

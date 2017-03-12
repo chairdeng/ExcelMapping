@@ -35,6 +35,8 @@ public class SheetMappingTest {
             excelBean.setDoubleField(22.33);
             beans.add(excelBean);
         }
+        Date startTime = new Date();
         sheetMapping.write(beans,file);
+        System.out.println(System.currentTimeMillis()-startTime.getTime());
     }
 }

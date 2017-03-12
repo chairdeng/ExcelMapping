@@ -6,7 +6,6 @@ import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
 import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
 import com.jd.jr.data.excel.mapping.exceptions.MappingException;
 import com.jd.jr.data.excel.mapping.format.FieldMappingFormatter;
-import com.jd.jr.data.excel.mapping.format.SimpleFieldMappingFormatter;
 import com.jd.jr.data.excel.mapping.utils.SheetUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -333,24 +332,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         int cellIndex = 0;
         Row titleRow = sheet.createRow(rowIndex);
         for(FieldDefinition fieldDefinition:fieldDefinitions){
-            Class<?> formatterClass = fieldDefinition.getFormatter();
 
-            if(FieldMappingFormatter.class.isAssignableFrom(formatterClass)) {
-                FieldMappingFormatter formatter = null;
-                try {
-                    formatter = (FieldMappingFormatter) formatterClass.newInstance();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-                String format = fieldDefinition.getFormat();
-                if (formatterClass == SimpleFieldMappingFormatter.class && format != null && !"".equals(format)) {
-
-                    ((SimpleFieldMappingFormatter) formatter).setFormat(format);
-                }
-                fieldDefinition.setFormatterInstance(formatter);
-            }
             Cell cell = titleRow.createCell(cellIndex);
             cell.setCellValue(fieldDefinition.getTitle());
             int columnWidth = fieldDefinition.getWidth();
