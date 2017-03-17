@@ -65,6 +65,9 @@ public class SheetDefinitionParser {
             sheetDefinition.setEnableStyle(excelSheet.enableStyle());
             sheetDefinition.setVersion(excelSheet.version());
             sheetDefinition.setDefaultColumnWidth(excelSheet.defaultColumnWidth());
+            sheetDefinition.setEnableProtect(excelSheet.enableProtect());
+            sheetDefinition.setAllowInsertRow(excelSheet.allowInsertRow());
+            sheetDefinition.setSheetPassword(excelSheet.sheetPassword());
         }
         Field[] fields = clazz.getDeclaredFields();
         List<FieldDefinition> fieldDefinitions = new ArrayList<FieldDefinition>();

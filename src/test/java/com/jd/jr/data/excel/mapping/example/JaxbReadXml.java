@@ -1,14 +1,15 @@
 package com.jd.jr.data.excel.mapping.example;
 
+import com.jd.jr.data.excel.mapping.SheetMapping;
+import com.jd.jr.data.excel.mapping.SheetMappingHandler;
 import com.jd.jr.data.excel.mapping.definition.ExcelMappingDefinition;
+import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
+import com.jd.loan.dist.erp.domain.OrderSkuDetail;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.text.MessageFormat;
 
 /**
@@ -70,9 +71,12 @@ public class JaxbReadXml {
         }
     }
 
-    public static void main(String[] args) throws JAXBException {
-        ExcelMappingDefinition mappingDefinition = JaxbReadXml.readString(ExcelMappingDefinition.class, "D:\\Work Directory\\workspase\\loan-dist\\SheetMapping\\src\\test\\resources\\sheetconfig.xml");
-        System.out.println(mappingDefinition);
+    public static void main(String[] args) throws JAXBException, IOException {
+        SheetDefinition sheetDefinition = JaxbReadXml.readString(SheetDefinition.class, "D:\\Work Directory\\workspase\\ExcelMapping\\src\\test\\resources\\sheetconfig.xml");
+        System.out.println(sheetDefinition);
+        InputStream inputStream = new FileInputStream("D:\\Work Directory\\workspase\\ExcelMapping\\src\\test\\resources\\sheetconfig.xml");
+        SheetMapping<OrderSkuDetail> sheetMapping = SheetMappingHandler.newInstance(inputStream);
+        System.out.println(sheetMapping);
 //        JAXBContext jaxbContext = JAXBContext.newInstance(ExcelMappingDefinition.class);
 //        Marshaller marshaller = jaxbContext.createMarshaller();
 //        ExcelMappingDefinition excelMappingDefinition = new ExcelMappingDefinition();

@@ -1,7 +1,7 @@
 package com.jd.jr.data.excel.mapping.annotation;
 
 import com.jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
-
+import static com.jd.jr.data.excel.mapping.enums.ExcelVersionEnum.HSSF;
 import java.lang.annotation.*;
 
 /**
@@ -16,7 +16,10 @@ import java.lang.annotation.*;
 @Documented
 public @interface ExcelSheet {
     String name() default "";
-    ExcelVersionEnum version() default ExcelVersionEnum.HSSF;
+    ExcelVersionEnum version() default HSSF;
     boolean enableStyle() default false;
+    boolean enableProtect() default false;
+    boolean allowInsertRow() default true;
     int defaultColumnWidth() default 10;
+    String sheetPassword() default "";
 }

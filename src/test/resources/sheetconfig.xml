@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<sheet class="com.jd.jr.data.excel.mapping.example.ExcelBean" name="Sheet 1" xmlns="http://jr.jd.com/schema/excel-mapping">
-    <field name="name_0" title="title_0" width="0" locked="false" align="center"></field>
-    <field name="name_1" title="title_1" width="0" locked="false" align="left"></field>
-    <field name="name_2" title="title_2" width="0" locked="false"></field>
-    <field name="name_3" title="title_3" width="0" locked="false"></field>
-    <field name="name_4" title="title_4" width="0" locked="false"></field>
-    <field name="name_5" title="title_5" width="0" locked="false"></field>
-    <field name="name_6" title="title_6" width="0" locked="false"></field>
-    <field name="name_7" title="title_7" width="0" locked="false"></field>
-    <field name="name_8" title="title_8" width="0" locked="false"></field>
-    <field name="name_9" title="title_9" width="0" locked="false"></field>
+<?xml version="1.0" encoding="UTF-8" ?>
+<sheet class="com.jd.loan.dist.erp.domain.OrderSkuDetail" defaultColumnWidth="15" name="到货详情" xmlns="http://jr.jd.com/schema/excel-mapping">
+    <field name="sku" title="SKU"/>
+    <field name="skuName" title="SKU名称"/>
+    <field name="model" title="型号"/>
+    <field name="brand" title="品牌"/>
+    <field name="salesPrice" title="单价"/>
+    <field name="quantity" title="数量"/>
+    <field name="totalArrivalQuantity" title="到货数量"/>
+    <field name="totalLoseQuantity" title="缺少数量"/>
+    <field name="removeQuantity" title="已赎回数量"/>
+    <field name="pledgedPrice" title="质押价格"/>
 </sheet>

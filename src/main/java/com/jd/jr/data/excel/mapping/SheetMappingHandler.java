@@ -3,20 +3,27 @@ package com.jd.jr.data.excel.mapping;
 import com.jd.jr.data.excel.mapping.config.SheetDefinitionParser;
 import com.jd.jr.data.excel.mapping.definition.FieldDefinition;
 import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
+import com.jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
 import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
 import com.jd.jr.data.excel.mapping.exceptions.MappingException;
 import com.jd.jr.data.excel.mapping.format.FieldMappingFormatter;
 import com.jd.jr.data.excel.mapping.utils.SheetUtils;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetProtection;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -111,6 +118,12 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     public List<E> read(InputStream inputStream,int sheetIndex) throws IOException, InvalidFormatException {
         Workbook wb = WorkbookFactory.create(inputStream);
+        if(wb instanceof XSSFWorkbook){
+            sheetDefinition.setVersion(ExcelVersionEnum.XSSF);
+        }else if(wb instanceof HSSFWorkbook){
+            sheetDefinition.setVersion(ExcelVersionEnum.HSSF);
+        }
+
         Sheet sheet = wb.getSheetAt(sheetIndex);
         return read(sheet);
     }
@@ -147,7 +160,8 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
                         cell = row.getCell(order);
                         if(cell != null) {
                             Class fieldType = field.getType();
-                            if (fieldType.isAssignableFrom(String.class) && cell.getCellType() == Cell.CELL_TYPE_STRING) {
+                            if (fieldType.isAssignableFrom(String.class)) {
+                                cell.setCellType(Cell.CELL_TYPE_STRING);
                                 field.set(bean, cell.getStringCellValue());
                             }
                             if ((fieldType.isAssignableFrom(Boolean.class) || fieldType.isAssignableFrom(boolean.class)) && cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
@@ -203,16 +217,8 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
     public void write(List<E> beans, Workbook workbook, int sheetIndex) {
 
         Class<E> mappingType = sheetDefinition.getClazz();
-        Sheet sheet = null;
 
-        if(sheetDefinition.getName() == null || "".equals(sheetDefinition.getName())) {
-            sheet = workbook.createSheet();
-        }
-        else {
-            sheet = workbook.createSheet(sheetDefinition.getName());
-        }
-        sheet.setDefaultColumnWidth(sheetDefinition.getDefaultColumnWidth());
-        List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
+        Sheet sheet = createSheet(workbook);
 
         //写入标题行
         Row titleRow = createTitleRow(sheet,sheetDefinition);
@@ -222,127 +228,12 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             if(!bean.getClass().isAssignableFrom(mappingType)){
                 throw new DefinitionException("配置中定义的类型与所输入的类型不为同一类型，或其子类！");
             }
-            Row contextRow = createContextRow(bean,workbook,sheet,fieldDefinitions);
+            Row contextRow = createContextRow(bean,sheet,sheetDefinition.getFieldDefinitions());
 
         }
     }
 
-    /**
-     * 创建内容行
-     * @param bean 行内容bean
-     * @param workbook
-     * @param sheet
-     * @param fieldDefinitions
-     * @return
-     */
-    protected Row createContextRow(E bean,Workbook workbook,Sheet sheet,List<FieldDefinition> fieldDefinitions){
-        int cellIndex = 0;
-        Row contextRow = sheet.createRow(sheet.getLastRowNum()+1);
 
-        for(FieldDefinition fieldDefinition:fieldDefinitions){
-            Cell cell = contextRow.createCell(cellIndex++);
-            Class<?> clazz = bean.getClass();
-
-            try {
-                Field field = clazz.getDeclaredField(fieldDefinition.getName());
-                setCellValue(bean,field,fieldDefinition,workbook,cell);
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            }
-        }
-        cellIndex = 0;
-        return contextRow;
-    }
-    private void setCellValue(E bean,Field field,FieldDefinition fieldDefinition,Workbook workbook,Cell cell) throws IllegalAccessException, InstantiationException {
-        field.setAccessible(true);
-        FieldMappingFormatter formatter = fieldDefinition.getFormatterInstance();
-        if(formatter != null) {
-            Object cellValue = formatter.toExcelValue(field.get(bean), fieldDefinition);
-            if (cellValue != null) {
-                if (cellValue instanceof String) {
-                    cell.setCellType(Cell.CELL_TYPE_STRING);
-                    cell.setCellValue((String) cellValue);
-                }
-                if (cellValue instanceof Boolean) {
-                    cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-                    cell.setCellValue(field.getBoolean(cellValue));
-                }
-                if (cellValue instanceof Date) {
-                    CellStyle cellStyle = workbook.createCellStyle();
-                    DataFormat dataFormat = workbook.createDataFormat();
-                    cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
-                    cell.setCellStyle(cellStyle);
-                    cell.setCellValue((Date) cellValue);
-                }
-                if (cellValue instanceof Integer) {
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue((Integer) cellValue);
-                } else if (cellValue instanceof BigDecimal) {
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(((BigDecimal) cellValue).doubleValue());
-                } else if (cellValue instanceof Float) {
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue((Float) cellValue);
-                } else if (cellValue instanceof Double) {
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue((Double) cellValue);
-                }
-                return;
-            }
-        }
-
-        Class fieldType = field.getType();
-        if (fieldType.isAssignableFrom(String.class)) {
-            cell.setCellType(Cell.CELL_TYPE_STRING);
-            cell.setCellValue((String) field.get(bean));
-        }
-        if ((fieldType.isAssignableFrom(Boolean.class) || fieldType.isAssignableFrom(boolean.class))) {
-            cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-            cell.setCellValue(field.getBoolean(bean));
-        }
-        if (fieldType.isAssignableFrom(Date.class)) {
-            CellStyle cellStyle = workbook.createCellStyle();
-            DataFormat dataFormat = workbook.createDataFormat();
-            cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
-            cell.setCellStyle(cellStyle);
-            cell.setCellValue((Date) field.get(bean));
-        }
-        if (fieldType.isAssignableFrom(Integer.class) || fieldType.isAssignableFrom(int.class)) {
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(field.getInt(bean));
-        } else if(fieldType.isAssignableFrom(BigDecimal.class)){
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(((BigDecimal)field.get(bean)).doubleValue());
-        } else if(fieldType.isAssignableFrom(Float.class) || fieldType.isAssignableFrom(float.class)){
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(field.getFloat(bean));
-        } else if (fieldType.isAssignableFrom(Double.class) || fieldType.isAssignableFrom(double.class)) {
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(field.getDouble(bean));
-        }
-    }
-    protected Row createTitleRow(Sheet sheet,SheetDefinition sheetDefinition){
-        //写入标题行
-        List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
-        int rowIndex = 0;
-        int cellIndex = 0;
-        Row titleRow = sheet.createRow(rowIndex);
-        for(FieldDefinition fieldDefinition:fieldDefinitions){
-
-            Cell cell = titleRow.createCell(cellIndex);
-            cell.setCellValue(fieldDefinition.getTitle());
-            int columnWidth = fieldDefinition.getWidth();
-            if(columnWidth>0) {
-                sheet.setColumnWidth(cellIndex, columnWidth * 256);
-            }
-            cellIndex++;
-        }
-        return titleRow;
-    }
     /**
      * 将beans中的数据按照配置写入sheet
      *
@@ -370,31 +261,10 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      * @param sheetIndex   Sheet的索引号
      */
     public void write(List<E> beans, OutputStream outputStream, int sheetIndex) {
-        Workbook workbook;
-        switch (sheetDefinition.getVersion()){
-            case HSSF:
-                workbook = new HSSFWorkbook();
-                break;
-            case XSSF:
-                workbook = new XSSFWorkbook();
-                break;
-            default:
-                workbook = new HSSFWorkbook();
-        }
+        Workbook workbook = createWorkbook();
         write(beans,workbook,sheetIndex);
+        writeWorkbook(workbook,outputStream);
 
-        try {
-            workbook.write(outputStream);
-            outputStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally {
-            try {
-                outputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
     /**
      * 将beans数据写入到指定的文件当中，如果文件不存在则创建它
@@ -424,6 +294,103 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     public void write(List<E> beans, File file) {
         write(beans,file,0);
+    }
+    /**
+     * 记录集数据写入到Workbook中
+     *
+     * @param resultSet 记录集
+     * @param workbook  写入的目标，如果为null则在写入时创建
+     */
+    @Override
+    public void write(ResultSet resultSet, Workbook workbook) {
+        write(resultSet,workbook,0);
+    }
+
+
+
+    /**
+     * 将记录集数据写入到Excel输出流中
+     *
+     * @param resultSet    记录集
+     * @param outputStream 输出流
+     */
+    @Override
+    public void write(ResultSet resultSet, OutputStream outputStream) {
+        write(resultSet,outputStream,0);
+    }
+
+    /**
+     * 将记录集数据写入到Excel输出流中
+     *
+     * @param resultSet    指定的记录集
+     * @param outputStream 输出流
+     * @param sheetIndex   sheet索引号
+     */
+    @Override
+    public void write(ResultSet resultSet, OutputStream outputStream, int sheetIndex) {
+        Workbook workbook = createWorkbook();
+
+        write(resultSet,workbook,sheetIndex);
+
+        writeWorkbook(workbook,outputStream);
+    }
+
+    /**
+     * 将记录集映射写入到Excel文件中
+     *
+     * @param resultSet 记录集
+     * @param file      文件
+     */
+    @Override
+    public void write(ResultSet resultSet, File file) {
+        write(resultSet,file,0);
+    }
+
+    /**
+     * 将记录集映射写入到Excel文件中
+     *
+     * @param resultSet  记录集
+     * @param file       文件
+     * @param sheetIndex Sheet的索引号
+     */
+    @Override
+    public void write(ResultSet resultSet, File file, int sheetIndex) {
+        if(file == null){
+            throw new MappingException("文件不可为null");
+        }
+        try {
+            OutputStream outputStream = new FileOutputStream(file);
+            write(resultSet,outputStream,sheetIndex);
+        } catch (FileNotFoundException e) {
+            throw new MappingException("文件不存在");
+        }
+    }
+
+    /**
+     * 记录集数据写入到Workbook中
+     *
+     * @param resultSet  记录集
+     * @param workbook   写入的目标，如果为null则在写入时创建
+     * @param sheetIndex Sheet的索引号
+     */
+    @Override
+    public void write(ResultSet resultSet, Workbook workbook, int sheetIndex) {
+        //TODO:实现该方法
+
+        Sheet sheet = createSheet(workbook);
+
+        //写入标题行
+        Row titleRow = createTitleRow(sheet,sheetDefinition);
+
+        try {
+            ResultSetMetaData metaData = resultSet.getMetaData();
+
+            while (resultSet.next()){
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
     /**
      * 创建一个无配置的SheetMapping
@@ -475,6 +442,240 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
     public static <E> SheetMapping<E> newInstance(File file) throws IOException {
         SheetDefinition sheetDefinition = sheetDefinitionParser.parse(file);
         return new SheetMappingHandler<E>(sheetDefinition);
+    }
+
+
+    /**
+     * 保护Sheet
+     * @param sheet
+     * @param sheetDefinition
+     */
+    private void setSheetProtect(Sheet sheet,SheetDefinition sheetDefinition){
+        String sheetPassword = sheetDefinition.getSheetPassword();
+        if(sheet instanceof XSSFSheet){
+            XSSFSheet xssfSheet = (XSSFSheet)sheet;
+
+            if(sheetDefinition.isEnableProtect()) {
+                xssfSheet.enableLocking();
+                CTSheetProtection sheetProtection = xssfSheet.getCTWorksheet().getSheetProtection();
+                sheetProtection.setSelectLockedCells(true);
+                sheetProtection.setSelectUnlockedCells(false);
+                sheetProtection.setFormatCells(true);
+                sheetProtection.setFormatColumns(true);
+                sheetProtection.setFormatRows(true);
+                sheetProtection.setInsertColumns(true);
+                sheetProtection.setDeleteColumns(true);
+                sheetProtection.setDeleteRows(true);
+                sheetProtection.setInsertRows(!sheetDefinition.isAllowInsertRow());
+                sheetProtection.setInsertHyperlinks(false);
+
+                sheetProtection.setSort(false);
+                sheetProtection.setAutoFilter(false);
+                sheetProtection.setPivotTables(true);
+                sheetProtection.setObjects(true);
+                sheetProtection.setScenarios(true);
+            }
+        }else if(sheet instanceof HSSFSheet){
+            HSSFSheet hssfSheet = (HSSFSheet)sheet;
+            if(sheetPassword != null) {
+                hssfSheet.protectSheet(sheetDefinition.getSheetPassword());
+            }
+
+        }
+    }
+    /**
+     * 创建内容行
+     * @param bean 行内容bean
+     * @param sheet
+     * @param fieldDefinitions
+     * @return
+     */
+    private Row createContextRow(E bean,Sheet sheet,List<FieldDefinition> fieldDefinitions){
+        Workbook workbook = sheet.getWorkbook();
+        int cellIndex = 0;
+        Row contextRow = sheet.createRow(sheet.getLastRowNum()+1);
+
+        for(FieldDefinition fieldDefinition:fieldDefinitions){
+            Cell cell = contextRow.createCell(cellIndex++);
+            Class<?> clazz = bean.getClass();
+
+            try {
+                Field field = clazz.getDeclaredField(fieldDefinition.getName());
+                setCellValue(bean,field,fieldDefinition,cell);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            }
+        }
+        cellIndex = 0;
+        return contextRow;
+    }
+
+    /**
+     * 设定Cell内容
+     * @param bean
+     * @param field
+     * @param fieldDefinition
+     * @param cell
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
+    private void setCellValue(E bean,Field field,FieldDefinition fieldDefinition,Cell cell) throws IllegalAccessException, InstantiationException {
+        Workbook workbook = cell.getRow().getSheet().getWorkbook();
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setLocked(fieldDefinition.isLocked());
+        field.setAccessible(true);
+        FieldMappingFormatter formatter = fieldDefinition.getFormatterInstance();
+        if(formatter != null) {
+            Object cellValue = formatter.toExcelValue(field.get(bean), fieldDefinition);
+            if (cellValue != null) {
+                if (cellValue instanceof String) {
+                    cell.setCellType(Cell.CELL_TYPE_STRING);
+                    cell.setCellValue((String) cellValue);
+                }
+                if (cellValue instanceof Boolean) {
+                    cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+                    cell.setCellValue(field.getBoolean(cellValue));
+                }
+                if (cellValue instanceof Date) {
+                    DataFormat dataFormat = workbook.createDataFormat();
+                    cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
+
+                    cell.setCellValue((Date) cellValue);
+                }
+                if (cellValue instanceof Integer) {
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue((Integer) cellValue);
+                } else if (cellValue instanceof BigDecimal) {
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue(((BigDecimal) cellValue).doubleValue());
+                } else if (cellValue instanceof Float) {
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue((Float) cellValue);
+                } else if (cellValue instanceof Double) {
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue((Double) cellValue);
+                }
+                return;
+            }
+        }
+
+        Class fieldType = field.getType();
+        if (fieldType.isAssignableFrom(String.class)) {
+            cell.setCellType(Cell.CELL_TYPE_STRING);
+            cell.setCellValue((String) field.get(bean));
+        }
+        if ((fieldType.isAssignableFrom(Boolean.class) || fieldType.isAssignableFrom(boolean.class))) {
+            cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+            cell.setCellValue(field.getBoolean(bean));
+        }
+        if (fieldType.isAssignableFrom(Date.class)) {
+
+            DataFormat dataFormat = workbook.createDataFormat();
+            cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
+            cell.setCellValue((Date) field.get(bean));
+        }
+        if (fieldType.isAssignableFrom(Integer.class) || fieldType.isAssignableFrom(int.class)) {
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(field.getInt(bean));
+        } else if(fieldType.isAssignableFrom(BigDecimal.class)){
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            if(field.get(bean) != null) {
+                cell.setCellValue(((BigDecimal) field.get(bean)).doubleValue());
+            }
+        } else if(fieldType.isAssignableFrom(Float.class) || fieldType.isAssignableFrom(float.class)){
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(field.getFloat(bean));
+        } else if (fieldType.isAssignableFrom(Double.class) || fieldType.isAssignableFrom(double.class)) {
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(field.getDouble(bean));
+        }
+        cell.setCellStyle(cellStyle);
+    }
+    private Row createTitleRow(Sheet sheet,SheetDefinition sheetDefinition){
+        Workbook workbook = sheet.getWorkbook();
+        sheet.createFreezePane( 0, 1, 0, 1 );
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setLocked(true);
+
+        //写入标题行
+        List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
+        int rowIndex = 0;
+        int cellIndex = 0;
+        Row titleRow = sheet.createRow(rowIndex);
+        for(FieldDefinition fieldDefinition:fieldDefinitions){
+
+            Cell cell = titleRow.createCell(cellIndex);
+            cell.setCellValue(fieldDefinition.getTitle());
+            cell.setCellStyle(cellStyle);
+            int columnWidth = fieldDefinition.getWidth();
+            if(columnWidth>0) {
+                sheet.setColumnWidth(cellIndex, columnWidth * 256);
+            }
+            cellIndex++;
+        }
+        return titleRow;
+    }
+
+    /**
+     * 根据sheet定义创建workbook
+     * @return
+     */
+    private Workbook createWorkbook(){
+        Workbook workbook;
+        switch (sheetDefinition.getVersion()){
+            case HSSF:
+                workbook = new HSSFWorkbook();
+                break;
+            case XSSF:
+                workbook = new XSSFWorkbook();
+                break;
+            default:
+                workbook = new HSSFWorkbook();
+        }
+        return workbook;
+    }
+
+    /**
+     * 创建Sheet
+     * @param workbook
+     * @return Sheet
+     */
+    private Sheet createSheet(Workbook workbook){
+        Sheet sheet;
+        if(sheetDefinition.getName() == null || "".equals(sheetDefinition.getName())) {
+            sheet = workbook.createSheet();
+        }
+        else {
+            sheet = workbook.createSheet(sheetDefinition.getName());
+        }
+        sheet.setDefaultColumnWidth(sheetDefinition.getDefaultColumnWidth());
+        List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
+
+        setSheetProtect(sheet,sheetDefinition);
+        return sheet;
+    }
+    /**
+     * 将workbook写入到流中
+     * @param workbook
+     * @param outputStream
+     */
+    private void writeWorkbook(Workbook workbook,OutputStream outputStream){
+        try {
+            workbook.write(outputStream);
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

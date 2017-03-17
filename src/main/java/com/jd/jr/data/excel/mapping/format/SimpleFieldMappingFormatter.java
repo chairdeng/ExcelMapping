@@ -2,6 +2,7 @@ package com.jd.jr.data.excel.mapping.format;
 
 import com.jd.jr.data.excel.mapping.definition.FieldDefinition;
 import groovy.lang.GroovyShell;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ public class SimpleFieldMappingFormatter implements FieldMappingFormatter<Object
     private Map<Object,Object> map;
     private boolean parsed = false;
     private void parseFormat(String format){
-        if(!parsed) {//保证只执行一次
+        if(StringUtils.isNotBlank(format) && !parsed) {//保证只执行一次
             map = (Map) shell.evaluate(format);
             if (map != null) {
                 List<Object> keyList = new ArrayList();

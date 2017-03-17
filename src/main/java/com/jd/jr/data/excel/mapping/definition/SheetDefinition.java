@@ -35,11 +35,19 @@ public class SheetDefinition {
     private boolean enableStyle = false;
 
     @XmlAttribute
-    private ExcelVersionEnum version;
+    private ExcelVersionEnum version = ExcelVersionEnum.HSSF;
 
     @XmlAttribute
     private int defaultColumnWidth = 10;
 
+    @XmlAttribute
+    private boolean enableProtect = false;
+
+    @XmlAttribute
+    private boolean allowInsertRow = true;
+
+    @XmlAttribute
+    private String sheetPassword = null;
     @XmlTransient
     private int order;
 
@@ -59,6 +67,14 @@ public class SheetDefinition {
         this.name = name;
     }
 
+    public Class getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(Class clazz) {
+        this.clazz = clazz;
+    }
+
     public String getId() {
         return id;
     }
@@ -67,16 +83,12 @@ public class SheetDefinition {
         this.id = id;
     }
 
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
     public boolean isEnableStyle() {
         return enableStyle;
+    }
+
+    public void setEnableStyle(boolean enableStyle) {
+        this.enableStyle = enableStyle;
     }
 
     public ExcelVersionEnum getVersion() {
@@ -87,10 +99,6 @@ public class SheetDefinition {
         this.version = version;
     }
 
-    public void setEnableStyle(boolean enableStyle) {
-        this.enableStyle = enableStyle;
-    }
-
     public int getDefaultColumnWidth() {
         return defaultColumnWidth;
     }
@@ -99,11 +107,35 @@ public class SheetDefinition {
         this.defaultColumnWidth = defaultColumnWidth;
     }
 
-    public Class getClazz() {
-        return clazz;
+    public boolean isEnableProtect() {
+        return enableProtect;
     }
 
-    public void setClazz(Class clazz) {
-        this.clazz = clazz;
+    public void setEnableProtect(boolean enableProtect) {
+        this.enableProtect = enableProtect;
+    }
+
+    public boolean isAllowInsertRow() {
+        return allowInsertRow;
+    }
+
+    public void setAllowInsertRow(boolean allowInsertRow) {
+        this.allowInsertRow = allowInsertRow;
+    }
+
+    public String getSheetPassword() {
+        return sheetPassword;
+    }
+
+    public void setSheetPassword(String sheetPassword) {
+        this.sheetPassword = sheetPassword;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 }

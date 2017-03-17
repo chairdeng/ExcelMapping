@@ -9,10 +9,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.*;
 import javax.xml.transform.sax.SAXSource;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -67,7 +64,8 @@ public class JAXBUtils {
             nsfFilter.setParent(reader);
             InputSource input = new InputSource(inputStream);
             SAXSource source = new SAXSource(nsfFilter, input);
-            return (T) unmarshaller.unmarshal(source,clazz);
+            JAXBElement<T> jaxbElement = unmarshaller.unmarshal(source,clazz);
+            return jaxbElement.getValue() ;
 
     }
     public static <T> T fromXML(String xml, Class<T> clazz) {

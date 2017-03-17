@@ -53,6 +53,10 @@
             <xsd:attribute name="id" type="xsd:string"/>
             <xsd:attribute name="name" type="xsd:string"/>
             <xsd:attribute name="enableStyle" type="xsd:boolean" default="false"/>
+            <xsd:attribute name="enableProtect" type="xsd:boolean" default="false"/>
+            <xsd:attribute name="allowInsertRow" type="xsd:boolean" default="true"/>
+            <xsd:attribute name="sheetPassword" type="xsd:string" default=""/>
+            <xsd:attribute name="defaultColumnWidth" type="xsd:int" default="10"/>
             <xsd:attribute name="version" type="excelVersion" default="hssf"/>
             <xsd:attribute name="class" type="xsd:string" use="required">
                 <xsd:annotation>

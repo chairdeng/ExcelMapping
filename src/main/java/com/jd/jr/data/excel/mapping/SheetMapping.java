@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 
 import java.io.*;
+import java.sql.ResultSet;
 import java.util.List;
 
 /**
@@ -122,5 +123,47 @@ public interface SheetMapping<E> {
      */
     void write(List<E> beans,File file,int sheetIndex);
 
+    /**
+     * 记录集数据写入到Workbook中
+     * @param resultSet 记录集
+     * @param workbook 写入的目标，如果为null则在写入时创建
+     */
+    void write(ResultSet resultSet,Workbook workbook);
 
+    /**
+     * 记录集数据写入到Workbook中
+     * @param resultSet 记录集
+     * @param workbook 写入的目标，如果为null则在写入时创建
+     * @param sheetIndex Sheet的索引号
+     */
+    void write(ResultSet resultSet,Workbook workbook,int sheetIndex);
+    /**
+     * 将记录集数据写入到Excel输出流中
+     * @param resultSet 记录集
+     * @param outputStream 输出流
+     */
+    void write(ResultSet resultSet,OutputStream outputStream);
+
+    /**
+     * 将记录集数据写入到Excel输出流中
+     * @param resultSet 指定的记录集
+     * @param outputStream 输出流
+     * @param sheetIndex sheet索引号
+     */
+    void write(ResultSet resultSet,OutputStream outputStream,int sheetIndex);
+
+    /**
+     * 将记录集映射写入到Excel文件中
+     * @param resultSet 记录集
+     * @param file 文件
+     */
+    void write(ResultSet resultSet,File file);
+
+    /**
+     * 将记录集映射写入到Excel文件中
+     * @param resultSet 记录集
+     * @param file 文件
+     * @param sheetIndex Sheet的索引号
+     */
+    void write(ResultSet resultSet,File file,int sheetIndex);
 }

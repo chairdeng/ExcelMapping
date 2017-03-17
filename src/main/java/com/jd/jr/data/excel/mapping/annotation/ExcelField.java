@@ -3,6 +3,7 @@ package com.jd.jr.data.excel.mapping.annotation;
 
 
 import com.jd.jr.data.excel.mapping.enums.CellAlignEnum;
+import static com.jd.jr.data.excel.mapping.enums.CellAlignEnum.CENTER;
 import com.jd.jr.data.excel.mapping.format.SimpleFieldMappingFormatter;
 
 import java.lang.annotation.*;
@@ -40,7 +41,7 @@ public @interface ExcelField {
      * 对齐方式
      *
      */
-    CellAlignEnum align() default CellAlignEnum.CENTER;
+    CellAlignEnum align() default CENTER;
 
     /**
      * 顺序号

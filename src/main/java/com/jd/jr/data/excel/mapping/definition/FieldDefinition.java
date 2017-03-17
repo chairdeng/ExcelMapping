@@ -3,6 +3,7 @@ package com.jd.jr.data.excel.mapping.definition;
 import com.jd.jr.data.excel.mapping.enums.CellAlignEnum;
 import com.jd.jr.data.excel.mapping.config.StringClassTypeAdapter;
 import com.jd.jr.data.excel.mapping.format.FieldMappingFormatter;
+import com.jd.jr.data.excel.mapping.format.SimpleFieldMappingFormatter;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -31,13 +32,13 @@ public class FieldDefinition implements Comparable<FieldDefinition>{
     @XmlAttribute
     private CellAlignEnum align;
     @XmlAttribute
-    private boolean locked;
+    private boolean locked = false;
     @XmlAttribute
     private String format;
 
     @XmlAttribute(name = "formatter",required = true)
     @XmlJavaTypeAdapter(StringClassTypeAdapter.class)
-    private Class formatter;
+    private Class formatter = SimpleFieldMappingFormatter.class;
 
     @XmlTransient
     private FieldMappingFormatter formatterInstance;
