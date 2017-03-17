@@ -1,5 +1,6 @@
 package com.jd.jr.data.excel.mapping;
 
+import com.jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -166,4 +167,9 @@ public interface SheetMapping<E> {
      * @param sheetIndex Sheet的索引号
      */
     void write(ResultSet resultSet,File file,int sheetIndex);
+
+    /**
+     * 获得Excel的版本
+     */
+    ExcelVersionEnum getExcelVersion();
 }

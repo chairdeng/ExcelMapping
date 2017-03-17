@@ -394,13 +394,12 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         }
     }
     /**
-     * 创建一个无配置的SheetMapping
-     *
-     * @return Sheet映射工具
+     * 获得Excel的版本
      */
-//    public SheetMapping<E> newInstance() {
-//        return new SheetMappingHandler<E>();
-//    }
+    @Override
+    public ExcelVersionEnum getExcelVersion() {
+        return sheetDefinition.getVersion();
+    }
 
     /**
      * 通过自定义SheetDefinition创建SheetMapping
