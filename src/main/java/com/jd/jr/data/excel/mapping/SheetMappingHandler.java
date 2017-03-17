@@ -26,6 +26,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
+import org.apache.commons.lang3.StringUtils;
 /**
  * *****************************************
  * 创建或读取Excel的上下文
@@ -646,7 +647,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     private Sheet createSheet(Workbook workbook){
         Sheet sheet;
-        if(sheetDefinition.getName() == null || "".equals(sheetDefinition.getName())) {
+        if(StringUtils.isNotBlank(sheetDefinition.getName())) {
             sheet = workbook.createSheet();
         }
         else {

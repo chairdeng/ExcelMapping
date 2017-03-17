@@ -20,6 +20,8 @@ public class ExcelBean {
     @ExcelField(title = "String")
     private String stringField;
     @ExcelField(title = "Integer")
+    private Integer integerField;
+
     private int intField;
     @ExcelField(title = "Double")
     private double doubleField;
@@ -38,12 +40,32 @@ public class ExcelBean {
         this.stringField = stringField;
     }
 
-    public Integer getIntField() {
+    public int getIntField() {
         return intField;
     }
 
-    public void setIntField(Integer intField) {
+    public void setIntField(int intField) {
         this.intField = intField;
+    }
+
+    public Integer getIntegerField() {
+        return integerField;
+    }
+
+    public void setIntegerField(Integer integerField) {
+        this.integerField = integerField;
+    }
+
+    public void setDoubleField(double doubleField) {
+        this.doubleField = doubleField;
+    }
+
+    public boolean isBooleanField() {
+        return booleanField;
+    }
+
+    public void setBooleanField(boolean booleanField) {
+        this.booleanField = booleanField;
     }
 
     public Double getDoubleField() {
