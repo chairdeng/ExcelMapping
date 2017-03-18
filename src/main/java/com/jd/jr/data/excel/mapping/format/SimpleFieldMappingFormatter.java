@@ -1,6 +1,7 @@
 package com.jd.jr.data.excel.mapping.format;
 
 import com.jd.jr.data.excel.mapping.definition.FieldDefinition;
+import com.jd.jr.data.excel.mapping.exceptions.FormatterException;
 import groovy.lang.GroovyShell;
 import org.apache.commons.lang3.StringUtils;
 
@@ -15,27 +16,7 @@ import java.util.Set;
 public class SimpleFieldMappingFormatter implements FieldMappingFormatter<Object,Object> {
     private static GroovyShell shell = new GroovyShell();
     private Map<Object,Object> map;
-    private boolean parsed = false;
-    private void parseFormat(String format){
-        if(StringUtils.isNotBlank(format) && !parsed) {//保证只执行一次
-            map = (Map) shell.evaluate(format);
-            if (map != null) {
-                List<Object> keyList = new ArrayList();
-                for (Object key : map.keySet()) {
-                    if (key instanceof String && ("true".equals(key) || "false".equals(key))) {
-                        keyList.add(key);
-
-                    }
-                }
-                for (Object key : keyList) {
-                    map.put(Boolean.parseBoolean((String) key), map.get(key));
-                }
-            }
-            parsed = true;
-        }
-    }
     public Object toExcelValue(Object o, FieldDefinition fieldDefinition) {
-        parseFormat(fieldDefinition.getFormat());
         if(map != null){
             return map.get(o);
         }
@@ -43,7 +24,6 @@ public class SimpleFieldMappingFormatter implements FieldMappingFormatter<Object
     }
 
     public Object fromExcelValue(Object o,FieldDefinition fieldDefinition) {
-        parseFormat(fieldDefinition.getFormat());
         if(map != null) {
             Set<Object> keySet = map.keySet();
             for (Object key : keySet) {
@@ -51,6 +31,27 @@ public class SimpleFieldMappingFormatter implements FieldMappingFormatter<Object
                     return key;
                 }
             }
+        }
+        return null;
+    }
+
+    @Override
+    public FieldMappingFormatter initialize(FieldDefinition fieldDefinition) throws FormatterException{
+        String format = fieldDefinition.getFormat();
+        if(StringUtils.isNotBlank(format)) {//保证只执行一次
+            map = (Map) shell.evaluate(format);
+            if (map != null) {
+                List<Object> keyList = new ArrayList();
+                for (Object key : map.keySet()) {
+                    if (key instanceof String && ("true".equals(key) || "false".equals(key))) {
+                        keyList.add(key);
+                    }
+                }
+                for (Object key : keyList) {
+                    map.put(Boolean.parseBoolean((String) key), map.get(key));
+                }
+            }
+            return this;
         }
         return null;
     }

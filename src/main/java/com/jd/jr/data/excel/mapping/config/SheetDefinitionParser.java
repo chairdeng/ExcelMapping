@@ -5,6 +5,7 @@ import com.jd.jr.data.excel.mapping.annotation.ExcelSheet;
 import com.jd.jr.data.excel.mapping.definition.FieldDefinition;
 import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
 import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
+import com.jd.jr.data.excel.mapping.exceptions.FormatterException;
 import com.jd.jr.data.excel.mapping.format.FieldMappingFormatter;
 import com.jd.jr.data.excel.mapping.utils.JAXBUtils;
 
@@ -108,7 +109,12 @@ public class SheetDefinitionParser {
             try {
                 Class<?> formatterClass = fieldDefinition.getFormatter();
                 if(FieldMappingFormatter.class.isAssignableFrom(formatterClass)) {
-                    fieldDefinition.setFormatterInstance((FieldMappingFormatter) fieldDefinition.getFormatter().newInstance());
+                    FieldMappingFormatter formatter = (FieldMappingFormatter) fieldDefinition.getFormatter().newInstance();
+                    try {
+                        fieldDefinition.setFormatterInstance(formatter.initialize(fieldDefinition));
+                    } catch (FormatterException e) {
+                        e.printStackTrace();
+                    }
                 }
             } catch (InstantiationException e) {
                 e.printStackTrace();

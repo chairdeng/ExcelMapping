@@ -8,6 +8,7 @@ import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
 import com.jd.jr.data.excel.mapping.exceptions.MappingException;
 import com.jd.jr.data.excel.mapping.format.FieldMappingFormatter;
 import com.jd.jr.data.excel.mapping.utils.SheetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -25,8 +26,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
-
-import org.apache.commons.lang3.StringUtils;
 /**
  * *****************************************
  * 创建或读取Excel的上下文
@@ -501,7 +500,8 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
 
             try {
                 Field field = clazz.getDeclaredField(fieldDefinition.getName());
-                setCellValue(bean,field,fieldDefinition,cell);
+                field.setAccessible(true);
+                setCellValue(field.get(bean),fieldDefinition,cell);
             } catch (NoSuchFieldException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
@@ -516,83 +516,54 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
 
     /**
      * 设定Cell内容
-     * @param bean
-     * @param field
+     * @param fieldValue
      * @param fieldDefinition
      * @param cell
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    private void setCellValue(E bean,Field field,FieldDefinition fieldDefinition,Cell cell) throws IllegalAccessException, InstantiationException {
+    private void setCellValue(Object fieldValue,FieldDefinition fieldDefinition,Cell cell) throws IllegalAccessException, InstantiationException {
         Workbook workbook = cell.getRow().getSheet().getWorkbook();
         CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setLocked(fieldDefinition.isLocked());
-        field.setAccessible(true);
+
         FieldMappingFormatter formatter = fieldDefinition.getFormatterInstance();
-        if(formatter != null) {
-            Object cellValue = formatter.toExcelValue(field.get(bean), fieldDefinition);
-            if (cellValue != null) {
-                if (cellValue instanceof String) {
-                    cell.setCellType(Cell.CELL_TYPE_STRING);
-                    cell.setCellValue((String) cellValue);
-                }
-                if (cellValue instanceof Boolean) {
-                    cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-                    cell.setCellValue(field.getBoolean(cellValue));
-                }
-                if (cellValue instanceof Date) {
-                    DataFormat dataFormat = workbook.createDataFormat();
+        if(formatter != null && (fieldValue instanceof String || fieldValue instanceof Integer || fieldValue instanceof Boolean)) {
+            fieldValue = formatter.toExcelValue(fieldValue, fieldDefinition);
+        }
+        if (fieldValue != null) {
+            if (fieldValue instanceof String) {
+                cell.setCellType(Cell.CELL_TYPE_STRING);
+                cell.setCellValue((String) fieldValue);
+            }
+            if (fieldValue instanceof Boolean) {
+                cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+                cell.setCellValue((Boolean)fieldValue);
+            }
+            if (fieldValue instanceof Date) {
+                DataFormat dataFormat = workbook.createDataFormat();
+                if(formatter != null && StringUtils.isBlank(fieldDefinition.getFormat())) {
                     cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
-
-                    cell.setCellValue((Date) cellValue);
+                }else {
+                    cellStyle.setDataFormat(dataFormat.getFormat(fieldDefinition.getFormat()));
                 }
-                if (cellValue instanceof Integer) {
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue((Integer) cellValue);
-                } else if (cellValue instanceof BigDecimal) {
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(((BigDecimal) cellValue).doubleValue());
-                } else if (cellValue instanceof Float) {
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue((Float) cellValue);
-                } else if (cellValue instanceof Double) {
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue((Double) cellValue);
-                }
-                return;
+                cell.setCellValue((Date) fieldValue);
+            }
+            if (fieldValue instanceof Integer) {
+                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                cell.setCellValue((Integer) fieldValue);
+            } else if (fieldValue instanceof BigDecimal) {
+                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                cell.setCellValue(((BigDecimal) fieldValue).doubleValue());
+            } else if (fieldValue instanceof Float) {
+                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                cell.setCellValue((Float) fieldValue);
+            } else if (fieldValue instanceof Double) {
+                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                cell.setCellValue((Double) fieldValue);
             }
         }
 
-        Class fieldType = field.getType();
-        if (fieldType.isAssignableFrom(String.class)) {
-            cell.setCellType(Cell.CELL_TYPE_STRING);
-            cell.setCellValue((String) field.get(bean));
-        }
-        if ((fieldType.isAssignableFrom(Boolean.class) || fieldType.isAssignableFrom(boolean.class))) {
-            cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-            cell.setCellValue(field.getBoolean(bean));
-        }
-        if (fieldType.isAssignableFrom(Date.class)) {
-
-            DataFormat dataFormat = workbook.createDataFormat();
-            cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
-            cell.setCellValue((Date) field.get(bean));
-        }
-        if (fieldType.isAssignableFrom(Integer.class) || fieldType.isAssignableFrom(int.class)) {
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(field.getInt(bean));
-        } else if(fieldType.isAssignableFrom(BigDecimal.class)){
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            if(field.get(bean) != null) {
-                cell.setCellValue(((BigDecimal) field.get(bean)).doubleValue());
-            }
-        } else if(fieldType.isAssignableFrom(Float.class) || fieldType.isAssignableFrom(float.class)){
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(field.getFloat(bean));
-        } else if (fieldType.isAssignableFrom(Double.class) || fieldType.isAssignableFrom(double.class)) {
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(field.getDouble(bean));
-        }
         cell.setCellStyle(cellStyle);
     }
     private Row createTitleRow(Sheet sheet,SheetDefinition sheetDefinition){
