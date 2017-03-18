@@ -38,7 +38,7 @@ public class SimpleFieldMappingFormatter implements FieldMappingFormatter<Object
     @Override
     public FieldMappingFormatter initialize(FieldDefinition fieldDefinition) throws FormatterException{
         String format = fieldDefinition.getFormat();
-        if(StringUtils.isNotBlank(format)) {//保证只执行一次
+        if(StringUtils.isNotBlank(format)) {
             map = (Map) shell.evaluate(format);
             if (map != null) {
                 List<Object> keyList = new ArrayList();

@@ -277,7 +277,6 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         if(file == null){
             throw new MappingException("文件不可为null");
         }
-
         try {
             OutputStream outputStream = new FileOutputStream(file);
             write(beans,outputStream,sheetIndex);
@@ -375,10 +374,8 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     @Override
     public void write(ResultSet resultSet, Workbook workbook, int sheetIndex) {
-        //TODO:实现该方法
 
         Sheet sheet = createSheet(workbook);
-
         //写入标题行
         Row titleRow = createTitleRow(sheet,sheetDefinition);
 
@@ -386,7 +383,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             ResultSetMetaData metaData = resultSet.getMetaData();
 
             while (resultSet.next()){
-
+                createContextRow(resultSet,sheet,sheetDefinition.getFieldDefinitions());
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -482,6 +479,32 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
 
         }
     }
+
+    /**
+     * 通过记录集创建内容行
+     * @param resultSet 记录集
+     * @param sheet
+     * @param fieldDefinitions
+     * @return
+     */
+    private Row createContextRow(ResultSet resultSet,Sheet sheet,List<FieldDefinition> fieldDefinitions){
+        Workbook workbook = sheet.getWorkbook();
+        int cellIndex = 0;
+
+        Row contextRow = sheet.createRow(sheet.getLastRowNum()+1);
+        for(FieldDefinition fieldDefinition:fieldDefinitions) {
+            Cell cell = contextRow.createCell(cellIndex++);
+            String name = fieldDefinition.getName();
+            try {
+                Object cellValue = resultSet.getObject(name);
+                setCellValue(cellValue, fieldDefinition, cell);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return contextRow;
+    }
     /**
      * 创建内容行
      * @param bean 行内容bean
@@ -496,21 +519,22 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
 
         for(FieldDefinition fieldDefinition:fieldDefinitions){
             Cell cell = contextRow.createCell(cellIndex++);
-            Class<?> clazz = bean.getClass();
-
-            try {
-                Field field = clazz.getDeclaredField(fieldDefinition.getName());
-                field.setAccessible(true);
-                setCellValue(field.get(bean),fieldDefinition,cell);
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
+            if(bean instanceof Map) {
+                Map beanMap = (Map)bean;
+                setCellValue(beanMap.get(fieldDefinition.getName()), fieldDefinition, cell);
+            }else {
+                Class<?> clazz = bean.getClass();
+                try {
+                    Field field = clazz.getDeclaredField(fieldDefinition.getName());
+                    field.setAccessible(true);
+                    setCellValue(field.get(bean), fieldDefinition, cell);
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
             }
         }
-        cellIndex = 0;
         return contextRow;
     }
 
@@ -522,13 +546,13 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    private void setCellValue(Object fieldValue,FieldDefinition fieldDefinition,Cell cell) throws IllegalAccessException, InstantiationException {
+    private void setCellValue(Object fieldValue,FieldDefinition fieldDefinition,Cell cell){
         Workbook workbook = cell.getRow().getSheet().getWorkbook();
         CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setLocked(fieldDefinition.isLocked());
 
         FieldMappingFormatter formatter = fieldDefinition.getFormatterInstance();
-        if(formatter != null && (fieldValue instanceof String || fieldValue instanceof Integer || fieldValue instanceof Boolean)) {
+        if(formatter != null) {
             fieldValue = formatter.toExcelValue(fieldValue, fieldDefinition);
         }
         if (fieldValue != null) {
@@ -542,25 +566,24 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             }
             if (fieldValue instanceof Date) {
                 DataFormat dataFormat = workbook.createDataFormat();
-                if(formatter != null && StringUtils.isBlank(fieldDefinition.getFormat())) {
-                    cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
-                }else {
-                    cellStyle.setDataFormat(dataFormat.getFormat(fieldDefinition.getFormat()));
-                }
+                cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
                 cell.setCellValue((Date) fieldValue);
             }
-            if (fieldValue instanceof Integer) {
+            if(fieldValue instanceof Number) {
                 cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue((Integer) fieldValue);
-            } else if (fieldValue instanceof BigDecimal) {
-                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue(((BigDecimal) fieldValue).doubleValue());
-            } else if (fieldValue instanceof Float) {
-                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue((Float) fieldValue);
-            } else if (fieldValue instanceof Double) {
-                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue((Double) fieldValue);
+                if (fieldValue instanceof Integer) {
+                    cell.setCellValue((Integer) fieldValue);
+                } else if (fieldValue instanceof Long) {
+                    cell.setCellValue((Long) fieldValue);
+                } else if (fieldValue instanceof Short) {
+                    cell.setCellValue((Short) fieldValue);
+                } else if (fieldValue instanceof BigDecimal) {
+                    cell.setCellValue(((BigDecimal) fieldValue).doubleValue());
+                } else if (fieldValue instanceof Float) {
+                    cell.setCellValue((Float) fieldValue);
+                } else if (fieldValue instanceof Double) {
+                    cell.setCellValue((Double) fieldValue);
+                }
             }
         }
 

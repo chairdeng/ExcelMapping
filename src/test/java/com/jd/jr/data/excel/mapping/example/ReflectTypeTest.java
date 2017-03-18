@@ -18,6 +18,7 @@ public class ReflectTypeTest {
         Class<ExcelBean> clazz = ExcelBean.class;
         try {
             Field intF = clazz.getDeclaredField("intField");
+            intF.setAccessible(true);
             Object o = intF.get(bean);
             System.out.println(o.getClass());
         } catch (NoSuchFieldException e) {

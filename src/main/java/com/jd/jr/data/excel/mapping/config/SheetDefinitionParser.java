@@ -114,6 +114,7 @@ public class SheetDefinitionParser {
                         fieldDefinition.setFormatterInstance(formatter.initialize(fieldDefinition));
                     } catch (FormatterException e) {
                         e.printStackTrace();
+                        throw new DefinitionException("配置错误，定义的Formatter错误！");
                     }
                 }
             } catch (InstantiationException e) {
