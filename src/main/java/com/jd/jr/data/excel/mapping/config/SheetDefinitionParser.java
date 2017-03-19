@@ -35,6 +35,7 @@ public class SheetDefinitionParser {
         }
         return parse(inputStream);
     }
+
     public SheetDefinition parse(InputStream inputStream){
         SheetDefinition sheetDefinition = null;
         try {
@@ -43,6 +44,17 @@ public class SheetDefinitionParser {
             e.printStackTrace();
             throw new DefinitionException(e.getMessage(),e);
         }
+        validate(sheetDefinition);
+        parseFormatter(sheetDefinition);
+        return sheetDefinition;
+    }
+
+    public SheetDefinition parse(String xmlString){
+        InputStream inputStream = new ByteArrayInputStream(xmlString.getBytes());
+        SheetDefinition sheetDefinition = parse(inputStream);
+        return sheetDefinition;
+    }
+    private void validate(SheetDefinition sheetDefinition) throws DefinitionException{
         if(sheetDefinition == null){
             throw new DefinitionException("XML定义错误，不能从XML中获取有效配置！");
         }
@@ -52,8 +64,6 @@ public class SheetDefinitionParser {
         if(sheetDefinition.getFieldDefinitions() == null || sheetDefinition.getFieldDefinitions().size()==0){
             throw new DefinitionException("XML定义错误，不能从XML中获取有效的字段定义配置！");
         }
-        parseFormatter(sheetDefinition);
-        return sheetDefinition;
     }
     public SheetDefinition parse(Class<?> clazz){
 
@@ -78,11 +88,13 @@ public class SheetDefinitionParser {
             if(field.isAnnotationPresent(ExcelField.class)) {
                 fieldDefinition = new FieldDefinition();
                 fieldDefinition.setName(field.getName());
+                fieldDefinition.setType(field.getType());
 
                 ExcelField excelField = field.getAnnotation(ExcelField.class);
                 fieldDefinition.setTitle(excelField.title());
                 fieldDefinition.setWidth(excelField.width());
                 fieldDefinition.setAlign(excelField.align());
+
                 fieldDefinition.setFormat(excelField.format());
                 fieldDefinition.setFormatter(excelField.formatter());
                 if(excelField.order() == 0){

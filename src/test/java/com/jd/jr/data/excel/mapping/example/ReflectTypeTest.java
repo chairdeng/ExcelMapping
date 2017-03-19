@@ -12,10 +12,15 @@ import java.lang.reflect.Field;
 
 public class ReflectTypeTest {
     public static void main(String[] args){
+
         ExcelBean bean = new ExcelBean();
         bean.setIntField(1);
         bean.setIntegerField(2);
         Class<ExcelBean> clazz = ExcelBean.class;
+        Field[] fields = clazz.getDeclaredFields();
+        for(Field field:fields){
+            System.out.println(field.getType());
+        }
         try {
             Field intF = clazz.getDeclaredField("intField");
             intF.setAccessible(true);

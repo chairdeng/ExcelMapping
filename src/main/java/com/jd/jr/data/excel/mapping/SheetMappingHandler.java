@@ -18,12 +18,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetProtection;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 /**
@@ -36,19 +33,13 @@ import java.util.*;
 public class SheetMappingHandler<E> implements SheetMapping<E> {
 
 
-
     private SheetDefinition sheetDefinition;
 
     private static SheetDefinitionParser sheetDefinitionParser = new SheetDefinitionParser();
 
-    private SheetMappingHandler(){
-
-    }
     private SheetMappingHandler(SheetDefinition sheetDefinition){
         this.sheetDefinition = sheetDefinition;
-
     }
-
     /**
      * 通过文件读取Excel，默认读取第1个Sheet
      * @param file Excel文件
@@ -123,7 +114,6 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         }else if(wb instanceof HSSFWorkbook){
             sheetDefinition.setVersion(ExcelVersionEnum.HSSF);
         }
-
         Sheet sheet = wb.getSheetAt(sheetIndex);
         return read(sheet);
     }
@@ -138,73 +128,20 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         Map<String,Integer> titles = SheetUtils.getSheetTitles(sheet,0);
         List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
         List<E> list = new ArrayList<E>();
-        if(!mappingType.isAssignableFrom(Map.class)) {
-            E bean;
-            int rowIndex = 0;
-            Cell cell;
-            Row row;
-            try{
-                for(Iterator<Row> it = sheet.rowIterator(); it.hasNext();) {
-                    row = it.next();
-                    if (rowIndex++ == 0) {
-                        continue;
-                    }
-                    if (row == null) {
-                        break;
-                    }
-                    bean = mappingType.newInstance();
-                    for (FieldDefinition fieldDefinition : fieldDefinitions) {
-                        Field field = mappingType.getDeclaredField(fieldDefinition.getName());
-                        field.setAccessible(true);
-                        int order = titles.get(fieldDefinition.getTitle());
-                        cell = row.getCell(order);
-                        if(cell != null) {
-                            Class fieldType = field.getType();
-                            if (fieldType.isAssignableFrom(String.class)) {
-                                cell.setCellType(Cell.CELL_TYPE_STRING);
-                                field.set(bean, cell.getStringCellValue());
-                            }
-                            if ((fieldType.isAssignableFrom(Boolean.class) || fieldType.isAssignableFrom(boolean.class)) && cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
-                                field.set(bean, cell.getBooleanCellValue());
-                            }
-                            if (fieldType.isAssignableFrom(Date.class)) {
-                                field.set(bean, cell.getDateCellValue());
-                            }
-                            if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                                if (fieldType.isAssignableFrom(int.class) || fieldType.isAssignableFrom(Integer.class)) {
-                                    field.set(bean, new Double(cell.getNumericCellValue()).intValue());
-                                } else if(fieldType.isAssignableFrom(BigDecimal.class)){
-                                    field.set(bean,BigDecimal.valueOf(cell.getNumericCellValue()));
-                                } else if (fieldType.isAssignableFrom(Double.class) || fieldType.isAssignableFrom(Float.class)) {
-                                    Constructor<?> constructor = field.getType().getConstructor(double.class);
-                                    field.set(bean, constructor.newInstance(cell.getNumericCellValue()));
-
-                                } else if(fieldType.isAssignableFrom(double.class)){
-                                    field.set(bean,cell.getNumericCellValue());
-                                } else if(fieldType.isAssignableFrom(float.class)){
-                                    field.set(bean,(float)cell.getNumericCellValue());
-                                }
-                            }
-                        }
-
-
-                    }
-                    list.add(bean);
-                }
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
+        Row row;
+        int rowIndex = 0;
+        for(Iterator<Row> it = sheet.rowIterator(); it.hasNext();){
+            row = it.next();
+            if (rowIndex++ == 0) {
+                continue;
             }
-        }else {
-
+            if (row == null) {
+                break;
+            }
+            E entity = readRow(row,mappingType,fieldDefinitions,titles);
+            list.add(entity);
         }
+
         return list;
     }
     /**
@@ -217,9 +154,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
     public void write(List<E> beans, Workbook workbook, int sheetIndex) {
 
         Class<E> mappingType = sheetDefinition.getClazz();
-
         Sheet sheet = createSheet(workbook);
-
         //写入标题行
         Row titleRow = createTitleRow(sheet,sheetDefinition);
 
@@ -229,7 +164,6 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
                 throw new DefinitionException("配置中定义的类型与所输入的类型不为同一类型，或其子类！");
             }
             Row contextRow = createContextRow(bean,sheet,sheetDefinition.getFieldDefinitions());
-
         }
     }
 
@@ -305,8 +239,6 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         write(resultSet,workbook,0);
     }
 
-
-
     /**
      * 将记录集数据写入到Excel输出流中
      *
@@ -380,7 +312,6 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         Row titleRow = createTitleRow(sheet,sheetDefinition);
 
         try {
-            ResultSetMetaData metaData = resultSet.getMetaData();
 
             while (resultSet.next()){
                 createContextRow(resultSet,sheet,sheetDefinition.getFieldDefinitions());
@@ -428,7 +359,16 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         SheetDefinition sheetDefinition = sheetDefinitionParser.parse(inputStream);
         return new SheetMappingHandler<E>(sheetDefinition);
     }
-
+    /**
+     * 通过解析xml字符串映射定义文件获取Sheet映射定义
+     *
+     * @param xmlString 符合excel-mapping.xsd的xml配置文件字符串
+     * @return Sheet映射工具
+     */
+    public static <E> SheetMapping<E> newInstance(String xmlString) throws IOException {
+        SheetDefinition sheetDefinition = sheetDefinitionParser.parse(xmlString);
+        return new SheetMappingHandler<E>(sheetDefinition);
+    }
     /**
      * 通过file指定xml映射配置文件获取Sheet映射定义
      *
@@ -440,7 +380,91 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         return new SheetMappingHandler<E>(sheetDefinition);
     }
 
+    /**
+     * 从行中读入数据
+     * @param row excel 行
+     * @param mappingType 映射类型
+     * @param fieldDefinitions 列定义
+     * @param titles 标题映射
+     * @return
+     */
+    private E readRow(Row row,Class<E> mappingType,List<FieldDefinition> fieldDefinitions,Map<String,Integer> titles) {
+        Cell cell;
+        E entity = null;
 
+        if(mappingType.isAssignableFrom(Map.class)){
+            Map<String,Object> map = new HashMap<String,Object>();
+            for (FieldDefinition fieldDefinition : fieldDefinitions) {
+                int order = titles.get(fieldDefinition.getTitle());
+                cell = row.getCell(order);
+                Class type = fieldDefinition.getType();
+                if(cell != null){
+                    map.put(fieldDefinition.getName(), readCellValue(cell,type));
+                }
+            }
+            entity = (E) map;
+        }else {
+            try {
+                entity = mappingType.newInstance();
+                for (FieldDefinition fieldDefinition : fieldDefinitions) {
+                    Field field = mappingType.getDeclaredField(fieldDefinition.getName());
+                    field.setAccessible(true);
+                    int order = titles.get(fieldDefinition.getTitle());
+                    cell = row.getCell(order);
+                    if (cell != null) {
+                        Class fieldType = field.getType();
+                        field.set(entity, readCellValue(cell,fieldType));
+                    }
+                }
+
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return entity;
+    }
+
+    /**
+     * 根据字段类型读取cell的值
+     * @param cell 单元
+     * @param type 字段类型
+     * @return
+     */
+    private Object readCellValue(Cell cell, Class type){
+        if(type != null) {
+            if (type.isAssignableFrom(String.class)) {
+                cell.setCellType(Cell.CELL_TYPE_STRING);
+                return cell.getStringCellValue();
+            }
+            if ((type.isAssignableFrom(Boolean.class) || type.isAssignableFrom(boolean.class)) && cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
+                return cell.getBooleanCellValue();
+            }
+            if (type.isAssignableFrom(Date.class)) {
+                return cell.getDateCellValue();
+            }
+            if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                if (type.isAssignableFrom(int.class) || type.isAssignableFrom(Integer.class)) {
+                    return new Double(cell.getNumericCellValue()).intValue();
+                } else if (type.isAssignableFrom(BigDecimal.class)) {
+                    return BigDecimal.valueOf(cell.getNumericCellValue());
+                } else if (type.isAssignableFrom(Double.class) || type.isAssignableFrom(double.class) || type.isAssignableFrom(Float.class) || type.isAssignableFrom(float.class)) {
+                    return cell.getNumericCellValue();
+                }
+            }
+        }else {
+            switch (cell.getCellType()){
+                case Cell.CELL_TYPE_NUMERIC:
+                    return cell.getNumericCellValue();
+                case Cell.CELL_TYPE_STRING:
+                    return cell.getStringCellValue();
+                case Cell.CELL_TYPE_FORMULA:
+                    break;
+                case Cell.CELL_TYPE_BOOLEAN:
+                    return cell.getBooleanCellValue();
+            }
+        }
+        return null;
+    }
     /**
      * 保护Sheet
      * @param sheet
@@ -647,7 +671,6 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             sheet = workbook.createSheet(sheetDefinition.getName());
         }
         sheet.setDefaultColumnWidth(sheetDefinition.getDefaultColumnWidth());
-        List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
 
         setSheetProtect(sheet,sheetDefinition);
         return sheet;

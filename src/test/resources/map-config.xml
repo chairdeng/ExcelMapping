@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sheet class="java.util.Map" version="xssf" defaultColumnWidth="15" name="到货详情" xmlns="http://jr.jd.com/schema/excel-mapping">
+    <field name="id" title="ID"/>
+    <field name="name" title="名称"/>
+    <field name="date" title="日期"/>
+    <field name="age" title="年龄"/>
+    <field name="price" title="价格"/>
+    <field name="pic" title="图片"/>
+    <field name="cc" title="suibian"/>
+</sheet>
