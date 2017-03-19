@@ -19,8 +19,8 @@
     <xsd:element name="sheet">
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                    <xsd:element name="field">
+                <xsd:choice minOccurs="1" maxOccurs="unbounded">
+                    <xsd:element name="field" minOccurs="1" maxOccurs="unbounded">
                         <xsd:complexType>
                             <xsd:attribute name="name" type="xsd:string" use="required"/>
                             <xsd:attribute name="title" type="xsd:string" use="required"/>

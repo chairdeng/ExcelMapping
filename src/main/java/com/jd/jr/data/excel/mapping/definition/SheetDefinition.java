@@ -18,7 +18,7 @@ import java.util.List;
 @XmlRootElement(name = "sheet",namespace = "http://jr.jd.com/schema/excel-mapping")
 public class SheetDefinition {
     //列定义
-    @XmlElement(name="field")
+    @XmlElement(name="field",required = true)
     private List<FieldDefinition> fieldDefinitions;
 
     @XmlAttribute

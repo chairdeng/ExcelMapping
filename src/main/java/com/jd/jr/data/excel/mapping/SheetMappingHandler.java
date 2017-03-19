@@ -161,7 +161,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
 
         //写入内容行
         for(E bean:beans){
-            if(!bean.getClass().isAssignableFrom(mappingType)){
+            if(!mappingType.isAssignableFrom(bean.getClass()) && !mappingType.equals(bean.getClass())){
                 throw new DefinitionException("配置中定义的类型与所输入的类型不为同一类型，或其子类！");
             }
             Row contextRow = createContextRow(bean,sheet,sheetDefinition.getFieldDefinitions());
@@ -591,7 +591,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
                 cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
                 cell.setCellValue((Boolean)fieldValue);
             }
-            if (fieldValue instanceof Date && DateUtil.isCellDateFormatted(cell)) {
+            if (fieldValue instanceof Date) {
                 DataFormat dataFormat = workbook.createDataFormat();
                 cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
                 cell.setCellValue((Date) fieldValue);
@@ -667,7 +667,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     private Sheet createSheet(Workbook workbook){
         Sheet sheet;
-        if(StringUtils.isNotBlank(sheetDefinition.getName())) {
+        if(StringUtils.isBlank(sheetDefinition.getName())) {
             sheet = workbook.createSheet();
         }
         else {
