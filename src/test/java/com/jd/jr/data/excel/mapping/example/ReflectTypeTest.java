@@ -12,7 +12,12 @@ import java.lang.reflect.Field;
 
 public class ReflectTypeTest {
     public static void main(String[] args){
-
+        System.out.println();
+        try {
+            Class.forName("int");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         ExcelBean bean = new ExcelBean();
         bean.setIntField(1);
         bean.setIntegerField(2);

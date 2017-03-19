@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <sheet class="java.sql.ResultSet" version="xssf" defaultColumnWidth="15" name="到货详情" xmlns="http://jr.jd.com/schema/excel-mapping">
-    <field name="id" title="ID"/>
-    <field name="name" title="名称"/>
-    <field name="date" title="日期"/>
-    <field name="age" title="年龄"/>
-    <field name="price" title="价格"/>
-    <field name="pic" title="图片"/>
-    <field name="cc" title="suibian"/>
+    <field name="short" title="short"/>
+    <field name="int" title="int"/>
+    <field name="long" title="long"/>
+    <field name="float" title="float"/>
+    <field name="double" title="double"/>
+    <field name="decimal" title="decimal"/>
+    <field name="boolean" title="boolean"/>
+    <field name="varchar" title="varchar"/>
+    <field name="char" title="char"/>
+    <field name="datetime" title="datetime"/>
+    <field name="date" title="date"/>
+    <field name="timestamp" title="timestamp"/>
 </sheet>
