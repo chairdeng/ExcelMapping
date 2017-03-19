@@ -1,15 +1,20 @@
 package com.jd.jr.data.excel.mapping.test;
 
+import com.jd.jr.data.excel.mapping.SheetMapping;
+import com.jd.jr.data.excel.mapping.SheetMappingHandler;
 import com.jd.jr.data.excel.mapping.annotation.ExcelField;
 import com.jd.jr.data.excel.mapping.annotation.ExcelSheet;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.util.*;
 
 /**
  * Created by dengc on 2017/3/19.
@@ -20,7 +25,7 @@ public class SheetMappingTest {
     File resultSetConfigFile;
     @Before
     public void setUp() throws Exception {
-        resultSetConfigFile = new File(getClass().getResource("/result-config.xml").getFile());
+        resultSetConfigFile = new File(getClass().getResource("/resultset-config.xml").getFile());
         mapConfigFile = new File(getClass().getResource("/map-config.xml").getFile());
     }
 
@@ -29,8 +34,33 @@ public class SheetMappingTest {
 
     }
     @Test
-    public void testMapList(){
-
+    public void testMapList() throws IOException, InvalidFormatException {
+        List<Map> mapList = new ArrayList<Map>();
+        Map map;
+        for (int i=0;i<100;i++){
+            map = new HashMap();
+            map.put("int",i);
+            map.put("Integer",new Integer(i));
+            map.put("short",(short)i);
+            map.put("Short",new Short((short)i));
+            map.put("long",(long)i);
+            map.put("Long",new Long(i));
+            map.put("float",(float)i);
+            map.put("Float",new Float(i));
+            map.put("double",(double)i);
+            map.put("Double",new Double(i));
+            map.put("BigDecimal",new BigDecimal("11.22"));
+            map.put("String",String.valueOf(i));
+            map.put("Date",new Date());
+            map.put("boolean",i % 2 == 0);
+            map.put("Boolean",new Boolean(i % 2 == 0));
+            mapList.add(map);
+        }
+        SheetMapping<Map> sheetMapping = SheetMappingHandler.newInstance(mapConfigFile);
+        File excelFile = new File(this.getClass().getResource("/").getFile()+"out.xlsx");
+        sheetMapping.write(mapList,excelFile);
+        List<Map> outList = sheetMapping.read(excelFile);
+        Assert.assertEquals(outList.size(),100);
     }
     @Test
     public void testResult(){
