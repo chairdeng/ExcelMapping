@@ -40,6 +40,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
     private SheetMappingHandler(SheetDefinition sheetDefinition){
         this.sheetDefinition = sheetDefinition;
     }
+
     /**
      * 通过文件读取Excel，默认读取第1个Sheet
      * @param file Excel文件
@@ -260,9 +261,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
     @Override
     public void write(ResultSet resultSet, OutputStream outputStream, int sheetIndex) {
         Workbook workbook = createWorkbook();
-
         write(resultSet,workbook,sheetIndex);
-
         writeWorkbook(workbook,outputStream);
     }
 
@@ -306,13 +305,10 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     @Override
     public void write(ResultSet resultSet, Workbook workbook, int sheetIndex) {
-
         Sheet sheet = createSheet(workbook);
         //写入标题行
         Row titleRow = createTitleRow(sheet,sheetDefinition);
-
         try {
-
             while (resultSet.next()){
                 createContextRow(resultSet,sheet,sheetDefinition.getFieldDefinitions());
             }
@@ -432,26 +428,33 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     private Object readCellValue(Cell cell, Class type){
         if(type != null) {
-            if (type.isAssignableFrom(String.class)) {
+            if (type.equals(String.class)) {
                 cell.setCellType(Cell.CELL_TYPE_STRING);
                 return cell.getStringCellValue();
             }
-            if ((type.isAssignableFrom(Boolean.class) || type.isAssignableFrom(boolean.class)) && cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
+            if ((type.equals(Boolean.class) || type.equals(boolean.class)) && cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
                 return cell.getBooleanCellValue();
             }
-            if (type.isAssignableFrom(Date.class)) {
+            if (type.equals(Date.class) && DateUtil.isCellDateFormatted(cell)) {
                 return cell.getDateCellValue();
             }
             if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                if (type.isAssignableFrom(int.class) || type.isAssignableFrom(Integer.class)) {
+                if(type.equals(short.class) || type.equals(Short.class)){
+                    return new Double(cell.getNumericCellValue()).shortValue();
+                }else if(type.equals(long.class) || type.equals(Long.class)){
+                    return new Double(cell.getNumericCellValue()).longValue();
+                }else if (type.equals(int.class) || type.equals(Integer.class)) {
                     return new Double(cell.getNumericCellValue()).intValue();
-                } else if (type.isAssignableFrom(BigDecimal.class)) {
+                } else if (type.equals(BigDecimal.class)) {
                     return BigDecimal.valueOf(cell.getNumericCellValue());
-                } else if (type.isAssignableFrom(Double.class) || type.isAssignableFrom(double.class) || type.isAssignableFrom(Float.class) || type.isAssignableFrom(float.class)) {
+                } else if (type.equals(Double.class) || type.equals(double.class) || type.equals(Float.class) || type.equals(float.class)) {
                     return cell.getNumericCellValue();
                 }
             }
         }else {
+            if(DateUtil.isCellDateFormatted(cell)){
+                return cell.getDateCellValue();
+            }
             switch (cell.getCellType()){
                 case Cell.CELL_TYPE_NUMERIC:
                     return cell.getNumericCellValue();
@@ -588,7 +591,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
                 cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
                 cell.setCellValue((Boolean)fieldValue);
             }
-            if (fieldValue instanceof Date) {
+            if (fieldValue instanceof Date && DateUtil.isCellDateFormatted(cell)) {
                 DataFormat dataFormat = workbook.createDataFormat();
                 cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
                 cell.setCellValue((Date) fieldValue);
