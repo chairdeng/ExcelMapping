@@ -12,12 +12,23 @@ import java.lang.reflect.Field;
 
 public class ReflectTypeTest {
     public static void main(String[] args){
+        System.out.println();
+        try {
+            Class.forName("int");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         ExcelBean bean = new ExcelBean();
         bean.setIntField(1);
         bean.setIntegerField(2);
         Class<ExcelBean> clazz = ExcelBean.class;
+        Field[] fields = clazz.getDeclaredFields();
+        for(Field field:fields){
+            System.out.println(field.getType());
+        }
         try {
             Field intF = clazz.getDeclaredField("intField");
+            intF.setAccessible(true);
             Object o = intF.get(bean);
             System.out.println(o.getClass());
         } catch (NoSuchFieldException e) {

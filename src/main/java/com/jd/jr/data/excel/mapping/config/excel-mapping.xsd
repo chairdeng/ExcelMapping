@@ -19,8 +19,8 @@
     <xsd:element name="sheet">
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                    <xsd:element name="field">
+                <xsd:choice minOccurs="1" maxOccurs="unbounded">
+                    <xsd:element name="field" minOccurs="1" maxOccurs="unbounded">
                         <xsd:complexType>
                             <xsd:attribute name="name" type="xsd:string" use="required"/>
                             <xsd:attribute name="title" type="xsd:string" use="required"/>
@@ -36,6 +36,15 @@
                                 </xsd:simpleType>
                             </xsd:attribute>
                             <xsd:attribute name="locked" type="xsd:boolean" default="false"/>
+                            <xsd:attribute name="type" type="xsd:string">
+                                <xsd:annotation>
+                                    <xsd:documentation source="java:java.lang.Class">
+                                        <![CDATA[
+                                        Java类型的映射
+				                         ]]>
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
                             <xsd:attribute name="format" type="xsd:string"/>
                             <xsd:attribute name="fomatter" type="xsd:string" default="com.jd.jr.data.excel.mapping.format.SimpleFieldMappingFormatter">
                                 <xsd:annotation>

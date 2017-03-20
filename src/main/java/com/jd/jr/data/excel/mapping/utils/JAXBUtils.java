@@ -68,20 +68,18 @@ public class JAXBUtils {
             return jaxbElement.getValue() ;
 
     }
-    public static <T> T fromXML(String xml, Class<T> clazz) {
-        try {
-            JAXBContext context = getContext(clazz);
-            Unmarshaller unmarshaller = context.createUnmarshaller();
+    public static <T> T fromXML(String xml, Class<T> clazz) throws SAXException, JAXBException {
 
-            XMLReader reader = XMLReaderFactory.createXMLReader();
-            XMLFilterImpl nsfFilter = new JaxbUnmarshalFilter();
-            nsfFilter.setParent(reader);
-            InputSource input = new InputSource(new StringReader(xml));
-            SAXSource source = new SAXSource(nsfFilter, input);
-            return (T) unmarshaller.unmarshal(source,clazz);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
+        JAXBContext context = getContext(clazz);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+
+        XMLReader reader = XMLReaderFactory.createXMLReader();
+        XMLFilterImpl nsfFilter = new JaxbUnmarshalFilter();
+        nsfFilter.setParent(reader);
+        InputSource input = new InputSource(new StringReader(xml));
+        SAXSource source = new SAXSource(nsfFilter, input);
+        return (T) unmarshaller.unmarshal(source,clazz);
+
     }
     private static JAXBContext getContext(Class clazz){
         JAXBContext context = contexts.get(clazz);

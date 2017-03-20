@@ -33,6 +33,10 @@ public class FieldDefinition implements Comparable<FieldDefinition>{
     private CellAlignEnum align;
     @XmlAttribute
     private boolean locked = false;
+
+    @XmlAttribute
+    @XmlJavaTypeAdapter(StringClassTypeAdapter.class)
+    private Class type = null;
     @XmlAttribute
     private String format;
 
@@ -89,6 +93,14 @@ public class FieldDefinition implements Comparable<FieldDefinition>{
 
     public void setLocked(boolean locked) {
         this.locked = locked;
+    }
+
+    public Class getType() {
+        return type;
+    }
+
+    public void setType(Class type) {
+        this.type = type;
     }
 
     public String getFormat() {

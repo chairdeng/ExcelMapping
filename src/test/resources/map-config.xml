@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sheet class="java.util.Map" version="xssf" defaultColumnWidth="15" xmlns="http://jr.jd.com/schema/excel-mapping">
+    <field name="int" title="int" type="int"/>
+    <field name="Integer" title="Integer" type="java.lang.Integer"/>
+    <field name="short" title="short" type="short"/>
+    <field name="Short" title="Short" type="java.lang.Short"/>
+    <field name="long" title="long" type="long"/>
+    <field name="Long" title="Long" type="java.lang.Long"/>
+    <field name="float" title="float" type="float"/>
+    <field name="Float" title="Float" type="java.lang.Float"/>
+    <field name="double" title="double" type="double"/>
+    <field name="Double" title="Double" type="java.lang.Double"/>
+    <field name="BigDecimal" title="BigDecimal" type="java.math.BigDecimal"/>
+    <field name="String" title="String" type="java.lang.String"/>
+    <field name="boolean" title="boolean" type="boolean"/>
+    <field name="Boolean" title="Boolean" type="java.lang.Boolean"/>
+    <field name="Date" title="Date" type="java.util.Date"/>
+</sheet>

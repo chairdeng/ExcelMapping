@@ -21,11 +21,11 @@ public class ExcelBean {
     private String stringField;
     @ExcelField(title = "Integer")
     private Integer integerField;
-
+    @ExcelField(title = "int")
     private int intField;
     @ExcelField(title = "Double")
     private double doubleField;
-    @ExcelField(title = "Boolean",format = "[true:'真',false:'假']")
+    @ExcelField(title = "Boolean")
     private boolean booleanField;
     @ExcelField(title = "Date")
     private Date dateField;
