@@ -26,4 +26,8 @@ public enum ExcelVersionEnum {
     private ExcelVersionEnum(String ext){
         this.ext = ext;
     }
+
+    public String getExt() {
+        return ext;
+    }
 }
