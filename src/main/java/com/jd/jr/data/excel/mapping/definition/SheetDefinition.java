@@ -49,7 +49,7 @@ public class SheetDefinition {
     @XmlAttribute
     private String sheetPassword = null;
     @XmlTransient
-    private int order;
+    private int ordinal;
 
     public List<FieldDefinition> getFieldDefinitions() {
         return fieldDefinitions;
@@ -131,11 +131,11 @@ public class SheetDefinition {
         this.sheetPassword = sheetPassword;
     }
 
-    public int getOrder() {
-        return order;
+    public int getOrdinal() {
+        return ordinal;
     }
 
-    public void setOrder(int order) {
-        this.order = order;
+    public void setOrdinal(int ordinal) {
+        this.ordinal = ordinal;
     }
 }

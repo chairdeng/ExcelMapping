@@ -28,7 +28,7 @@ public class FieldDefinition implements Comparable<FieldDefinition>{
     @XmlAttribute
     private int width;
     @XmlTransient
-    private int order;
+    private int ordinal;
     @XmlAttribute
     private CellAlignEnum align;
     @XmlAttribute
@@ -71,12 +71,12 @@ public class FieldDefinition implements Comparable<FieldDefinition>{
         this.width = width;
     }
 
-    public int getOrder() {
-        return order;
+    public int getOrdinal() {
+        return ordinal;
     }
 
-    public void setOrder(int order) {
-        this.order = order;
+    public void setOrdinal(int ordinal) {
+        this.ordinal = ordinal;
     }
 
     public CellAlignEnum getAlign() {
