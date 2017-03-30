@@ -47,7 +47,7 @@ public @interface ExcelField {
      * 顺序号
      * @return
      */
-    int order() default 0;
+    int ordinal() default 0;
 
     String format() default "";
 

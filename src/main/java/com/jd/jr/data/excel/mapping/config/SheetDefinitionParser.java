@@ -97,10 +97,10 @@ public class SheetDefinitionParser {
 
                 fieldDefinition.setFormat(excelField.format());
                 fieldDefinition.setFormatter(excelField.formatter());
-                if(excelField.order() == 0){
-                    fieldDefinition.setOrder(i);
+                if(excelField.ordinal() == 0){
+                    fieldDefinition.setOrdinal(i);
                 }else {
-                    fieldDefinition.setOrder(excelField.order());
+                    fieldDefinition.setOrdinal(excelField.ordinal());
                 }
                 fieldDefinition.setLocked(excelField.isLocked());
                 fieldDefinitions.add(fieldDefinition);

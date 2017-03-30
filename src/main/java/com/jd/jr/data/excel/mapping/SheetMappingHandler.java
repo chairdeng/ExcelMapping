@@ -618,6 +618,13 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
 
         cell.setCellStyle(cellStyle);
     }
+
+    /**
+     * 创建标题行
+     * @param sheet
+     * @param sheetDefinition
+     * @return
+     */
     private Row createTitleRow(Sheet sheet,SheetDefinition sheetDefinition){
         Workbook workbook = sheet.getWorkbook();
         sheet.createFreezePane( 0, 1, 0, 1 );
