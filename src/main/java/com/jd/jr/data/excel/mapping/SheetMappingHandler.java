@@ -8,11 +8,15 @@ import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
 import com.jd.jr.data.excel.mapping.exceptions.MappingException;
 import com.jd.jr.data.excel.mapping.format.FieldMappingFormatter;
 import com.jd.jr.data.excel.mapping.utils.SheetUtils;
+import ognl.Ognl;
+import ognl.OgnlContext;
+import ognl.OgnlException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetProtection;
@@ -31,14 +35,17 @@ import java.util.*;
  * *****************************************
  */
 public class SheetMappingHandler<E> implements SheetMapping<E> {
-
+    private final int IN_MEMORY_ROW_SIZE = 5000;
 
     private SheetDefinition sheetDefinition;
 
     private static SheetDefinitionParser sheetDefinitionParser = new SheetDefinitionParser();
 
+    private OgnlContext context = new OgnlContext(new HashMap(23));
+
     private SheetMappingHandler(SheetDefinition sheetDefinition){
         this.sheetDefinition = sheetDefinition;
+        context.put("sheetDefinition",sheetDefinition);
     }
 
     /**
@@ -153,6 +160,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      * @param sheetIndex Sheet的索引号
      */
     public void write(List<E> beans, Workbook workbook, int sheetIndex) {
+        context.put("list",beans);
 
         Class<E> mappingType = sheetDefinition.getClazz();
         Sheet sheet = createSheet(workbook);
@@ -260,7 +268,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     @Override
     public void write(ResultSet resultSet, OutputStream outputStream, int sheetIndex) {
-        Workbook workbook = createWorkbook();
+        Workbook workbook = new SXSSFWorkbook(IN_MEMORY_ROW_SIZE);
         write(resultSet,workbook,sheetIndex);
         writeWorkbook(workbook,outputStream);
     }
@@ -540,27 +548,21 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      * @return
      */
     private Row createContextRow(E bean,Sheet sheet,List<FieldDefinition> fieldDefinitions){
+        context.setCurrentObject(bean);
         Workbook workbook = sheet.getWorkbook();
         int cellIndex = 0;
         Row contextRow = sheet.createRow(sheet.getLastRowNum()+1);
 
         for(FieldDefinition fieldDefinition:fieldDefinitions){
             Cell cell = contextRow.createCell(cellIndex++);
-            if(bean instanceof Map) {
-                Map beanMap = (Map)bean;
-                setCellValue(beanMap.get(fieldDefinition.getName()), fieldDefinition, cell);
-            }else {
-                Class<?> clazz = bean.getClass();
-                try {
-                    Field field = clazz.getDeclaredField(fieldDefinition.getName());
-                    field.setAccessible(true);
-                    setCellValue(field.get(bean), fieldDefinition, cell);
-                } catch (NoSuchFieldException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+            Object fieldValue = null;
+            try {
+                fieldValue = Ognl.getValue(fieldDefinition.getName(), context, context.getCurrentObject());
+            } catch (OgnlException e) {
+                e.printStackTrace();
             }
+            setCellValue(fieldValue, fieldDefinition, cell);
+
         }
         return contextRow;
     }

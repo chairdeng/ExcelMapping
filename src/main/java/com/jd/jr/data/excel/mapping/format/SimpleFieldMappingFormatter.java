@@ -2,7 +2,6 @@ package com.jd.jr.data.excel.mapping.format;
 
 import com.jd.jr.data.excel.mapping.definition.FieldDefinition;
 import com.jd.jr.data.excel.mapping.exceptions.FormatterException;
-import groovy.lang.GroovyShell;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -14,7 +13,7 @@ import java.util.Set;
  * Created by dengc on 2017/3/11.
  */
 public class SimpleFieldMappingFormatter implements FieldMappingFormatter<Object,Object> {
-    private static GroovyShell shell = new GroovyShell();
+
     private Map<Object,Object> map;
     public Object toExcelValue(Object o, FieldDefinition fieldDefinition) {
         if(map != null){
@@ -39,7 +38,7 @@ public class SimpleFieldMappingFormatter implements FieldMappingFormatter<Object
     public FieldMappingFormatter initialize(FieldDefinition fieldDefinition) throws FormatterException{
         String format = fieldDefinition.getFormat();
         if(StringUtils.isNotBlank(format)) {
-            map = (Map) shell.evaluate(format);
+
             if (map != null) {
                 List<Object> keyList = new ArrayList();
                 for (Object key : map.keySet()) {
