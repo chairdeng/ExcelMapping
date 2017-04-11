@@ -20,6 +20,8 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetProtection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -35,6 +37,9 @@ import java.util.*;
  * *****************************************
  */
 public class SheetMappingHandler<E> implements SheetMapping<E> {
+
+    private final Logger logger = LoggerFactory.getLogger(SheetMappingHandler.class);
+
     private final int IN_MEMORY_ROW_SIZE = 5000;
 
     private SheetDefinition sheetDefinition;
@@ -224,6 +229,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             OutputStream outputStream = new FileOutputStream(file);
             write(beans,outputStream,sheetIndex);
         } catch (FileNotFoundException e) {
+            logger.error("文件不存在",e);
             throw new MappingException("文件不存在");
         }
 
@@ -300,6 +306,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             OutputStream outputStream = new FileOutputStream(file);
             write(resultSet,outputStream,sheetIndex);
         } catch (FileNotFoundException e) {
+            logger.error("文件不存在",e);
             throw new MappingException("文件不存在");
         }
     }
@@ -359,7 +366,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      * @param inputStream 符合excel-mapping.xsd的xml配置文件
      * @return Sheet映射工具
      */
-    public static <E> SheetMapping<E> newInstance(InputStream inputStream) throws IOException {
+    public static <E> SheetMapping<E> newInstance(InputStream inputStream) {
         SheetDefinition sheetDefinition = sheetDefinitionParser.parse(inputStream);
         return new SheetMappingHandler<E>(sheetDefinition);
     }
@@ -369,7 +376,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      * @param xmlString 符合excel-mapping.xsd的xml配置文件字符串
      * @return Sheet映射工具
      */
-    public static <E> SheetMapping<E> newInstance(String xmlString) throws IOException {
+    public static <E> SheetMapping<E> newInstance(String xmlString) {
         SheetDefinition sheetDefinition = sheetDefinitionParser.parse(xmlString);
         return new SheetMappingHandler<E>(sheetDefinition);
     }
@@ -379,7 +386,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      * @param file 符合excel-mapping.xsd的xml配置文件
      * @return Sheet映射工具
      */
-    public static <E> SheetMapping<E> newInstance(File file) throws IOException {
+    public static <E> SheetMapping<E> newInstance(File file) {
         SheetDefinition sheetDefinition = sheetDefinitionParser.parse(file);
         return new SheetMappingHandler<E>(sheetDefinition);
     }
