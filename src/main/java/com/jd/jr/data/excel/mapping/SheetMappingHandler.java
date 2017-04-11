@@ -39,9 +39,9 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
 
     private SheetDefinition sheetDefinition;
 
-    private static SheetDefinitionParser sheetDefinitionParser = new SheetDefinitionParser();
+    private static final SheetDefinitionParser sheetDefinitionParser = new SheetDefinitionParser();
 
-    private OgnlContext context = new OgnlContext(new HashMap(23));
+    private final OgnlContext context = new OgnlContext(new HashMap(23));
 
     private SheetMappingHandler(SheetDefinition sheetDefinition){
         this.sheetDefinition = sheetDefinition;
@@ -165,14 +165,14 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         Class<E> mappingType = sheetDefinition.getClazz();
         Sheet sheet = createSheet(workbook);
         //写入标题行
-        Row titleRow = createTitleRow(sheet,sheetDefinition);
+        createTitleRow(sheet,sheetDefinition);
 
         //写入内容行
         for(E bean:beans){
             if(!mappingType.isAssignableFrom(bean.getClass()) && !mappingType.equals(bean.getClass())){
                 throw new DefinitionException("配置中定义的类型与所输入的类型不为同一类型，或其子类！");
             }
-            Row contextRow = createContextRow(bean,sheet,sheetDefinition.getFieldDefinitions());
+            createContextRow(bean,sheet,sheetDefinition.getFieldDefinitions());
         }
     }
 
@@ -315,7 +315,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
     public void write(ResultSet resultSet, Workbook workbook, int sheetIndex) {
         Sheet sheet = createSheet(workbook);
         //写入标题行
-        Row titleRow = createTitleRow(sheet,sheetDefinition);
+        createTitleRow(sheet,sheetDefinition);
         try {
             while (resultSet.next()){
                 createContextRow(resultSet,sheet,sheetDefinition.getFieldDefinitions());
@@ -549,7 +549,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     private Row createContextRow(E bean,Sheet sheet,List<FieldDefinition> fieldDefinitions){
         context.setCurrentObject(bean);
-        Workbook workbook = sheet.getWorkbook();
+
         int cellIndex = 0;
         Row contextRow = sheet.createRow(sheet.getLastRowNum()+1);
 
@@ -702,6 +702,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             try {
                 outputStream.close();
             } catch (IOException e) {
+
                 e.printStackTrace();
             }
         }
