@@ -43,12 +43,6 @@ public interface Pageable {
 	 */
 	int getOffset();
 
-	/**
-	 * Returns the sorting parameters.
-	 * 
-	 * @return
-	 */
-	Sort getSort();
 
 	/**
 	 * Returns the {@link Pageable} requesting the next {@link Page}.

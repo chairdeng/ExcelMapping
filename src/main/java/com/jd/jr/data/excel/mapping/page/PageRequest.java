@@ -15,7 +15,6 @@
  */
 package com.jd.jr.data.excel.mapping.page;
 
-import com.jd.jr.data.excel.mapping.page.Sort.Direction;
 
 /**
  * Basic Java Bean implementation of {@code Pageable}.
@@ -27,57 +26,27 @@ public class PageRequest extends AbstractPageRequest {
 
 	private static final long serialVersionUID = -4541509938956089562L;
 
-	private final Sort sort;
+
 
 	/**
 	 * Creates a new {@link PageRequest}. Pages are zero indexed, thus providing 0 for {@code page} will return the first
 	 * page.
-	 * 
+	 *
 	 * @param page zero-based page index.
 	 * @param size the size of the page to be returned.
 	 */
 	public PageRequest(int page, int size) {
-		this(page, size, null);
-	}
-
-	/**
-	 * Creates a new {@link PageRequest} with sort parameters applied.
-	 * 
-	 * @param page zero-based page index.
-	 * @param size the size of the page to be returned.
-	 * @param direction the direction of the {@link Sort} to be specified, can be {@literal null}.
-	 * @param properties the properties to sort by, must not be {@literal null} or empty.
-	 */
-	public PageRequest(int page, int size, Direction direction, String... properties) {
-		this(page, size, new Sort(direction, properties));
-	}
-
-	/**
-	 * Creates a new {@link PageRequest} with sort parameters applied.
-	 * 
-	 * @param page zero-based page index.
-	 * @param size the size of the page to be returned.
-	 * @param sort can be {@literal null}.
-	 */
-	public PageRequest(int page, int size, Sort sort) {
 		super(page, size);
-		this.sort = sort;
+
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Pageable#getSort()
-	 */
-	public Sort getSort() {
-		return sort;
-	}
 
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.domain.Pageable#next()
 	 */
 	public Pageable next() {
-		return new PageRequest(getPageNumber() + 1, getPageSize(), getSort());
+		return new PageRequest(getPageNumber() + 1, getPageSize());
 	}
 
 	/* 
@@ -85,7 +54,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * @see org.springframework.data.domain.AbstractPageRequest#previous()
 	 */
 	public PageRequest previous() {
-		return getPageNumber() == 0 ? this : new PageRequest(getPageNumber() - 1, getPageSize(), getSort());
+		return getPageNumber() == 0 ? this : new PageRequest(getPageNumber() - 1, getPageSize());
 	}
 
 	/* 
@@ -93,7 +62,7 @@ public class PageRequest extends AbstractPageRequest {
 	 * @see org.springframework.data.domain.Pageable#first()
 	 */
 	public Pageable first() {
-		return new PageRequest(0, getPageSize(), getSort());
+		return new PageRequest(0, getPageSize());
 	}
 
 	/*
@@ -113,9 +82,9 @@ public class PageRequest extends AbstractPageRequest {
 
 		PageRequest that = (PageRequest) obj;
 
-		boolean sortEqual = this.sort == null ? that.sort == null : this.sort.equals(that.sort);
 
-		return super.equals(that) && sortEqual;
+
+		return super.equals(that);
 	}
 
 	/*
@@ -124,7 +93,7 @@ public class PageRequest extends AbstractPageRequest {
 	 */
 	@Override
 	public int hashCode() {
-		return 31 * super.hashCode() + (null == sort ? 0 : sort.hashCode());
+		return 31 * super.hashCode();
 	}
 
 	/* 
@@ -133,7 +102,6 @@ public class PageRequest extends AbstractPageRequest {
 	 */
 	@Override
 	public String toString() {
-		return String.format("Page request [number: %d, size %d, sort: %s]", getPageNumber(), getPageSize(),
-				sort == null ? null : sort.toString());
+		return String.format("Page request [number: %d, size %d]", getPageNumber(), getPageSize());
 	}
 }

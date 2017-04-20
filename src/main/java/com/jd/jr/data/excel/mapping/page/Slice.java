@@ -62,12 +62,6 @@ public interface Slice<T> extends Iterable<T> {
 	 */
 	boolean hasContent();
 
-	/**
-	 * Returns the sorting parameters for the {@link Slice}.
-	 * 
-	 * @return
-	 */
-	Sort getSort();
 
 	/**
 	 * Returns whether the current {@link Slice} is the first one.

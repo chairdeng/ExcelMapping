@@ -134,13 +134,6 @@ abstract class Chunk<T> implements Slice<T>, Serializable {
 		return Collections.unmodifiableList(content);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.domain.Slice#getSort()
-	 */
-	public Sort getSort() {
-		return pageable == null ? null : pageable.getSort();
-	}
 
 	/*
 	 * (non-Javadoc)
