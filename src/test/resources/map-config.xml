@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<sheet class="java.util.Map" version="xssf" defaultColumnWidth="15" xmlns="http://jr.jd.com/schema/excel-mapping">
+<sheet xmlns="http://jr.jd.com/schema/excel-mapping" class="java.util.Map" version="xssf" defaultColumnWidth="15" >
     <field name="int" title="int" type="int"/>
     <field name="Integer" title="Integer" type="java.lang.Integer"/>
     <field name="short" title="short" type="short"/>

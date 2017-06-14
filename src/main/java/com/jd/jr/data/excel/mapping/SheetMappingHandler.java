@@ -7,7 +7,7 @@ import com.jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
 import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
 import com.jd.jr.data.excel.mapping.exceptions.MappingException;
 import com.jd.jr.data.excel.mapping.format.FieldMappingFormatter;
-import com.jd.jr.data.excel.mapping.utils.SheetUtils;
+import com.jd.jr.data.excel.mapping.utils.ExcelUtils;
 import ognl.Ognl;
 import ognl.OgnlContext;
 import ognl.OgnlException;
@@ -138,7 +138,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      */
     public List<E> read(Sheet sheet){
         Class<E> mappingType = sheetDefinition.getClazz();
-        Map<String,Integer> titles = SheetUtils.getSheetTitles(sheet,0);
+        Map<String,Integer> titles = ExcelUtils.getSheetTitles(sheet,0);
         List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
         List<E> list = new ArrayList<E>();
         Row row;
@@ -209,9 +209,9 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
      * @param sheetIndex   Sheet的索引号
      */
     public void write(List<E> beans, OutputStream outputStream, int sheetIndex) {
-        Workbook workbook = createWorkbook();
+        Workbook workbook = ExcelUtils.createWorkbook(sheetDefinition.getVersion());
         write(beans,workbook,sheetIndex);
-        writeWorkbook(workbook,outputStream);
+        ExcelUtils.writeWorkbook(workbook,outputStream);
 
     }
     /**
@@ -276,7 +276,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
     public void write(ResultSet resultSet, OutputStream outputStream, int sheetIndex) {
         Workbook workbook = new SXSSFWorkbook(IN_MEMORY_ROW_SIZE);
         write(resultSet,workbook,sheetIndex);
-        writeWorkbook(workbook,outputStream);
+        ExcelUtils.writeWorkbook(workbook,outputStream);
     }
 
     /**
@@ -657,24 +657,7 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         return titleRow;
     }
 
-    /**
-     * 根据sheet定义创建workbook
-     * @return
-     */
-    private Workbook createWorkbook(){
-        Workbook workbook;
-        switch (sheetDefinition.getVersion()){
-            case HSSF:
-                workbook = new HSSFWorkbook();
-                break;
-            case XSSF:
-                workbook = new XSSFWorkbook();
-                break;
-            default:
-                workbook = new HSSFWorkbook();
-        }
-        return workbook;
-    }
+
 
     /**
      * 创建Sheet
@@ -694,25 +677,6 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
         setSheetProtect(sheet,sheetDefinition);
         return sheet;
     }
-    /**
-     * 将workbook写入到流中
-     * @param workbook
-     * @param outputStream
-     */
-    private void writeWorkbook(Workbook workbook,OutputStream outputStream){
-        try {
-            workbook.write(outputStream);
-            outputStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally {
-            try {
-                outputStream.close();
-            } catch (IOException e) {
 
-                e.printStackTrace();
-            }
-        }
-    }
 
 }

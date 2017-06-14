@@ -12,14 +12,14 @@ import java.util.List;
  * @date 2017/3/9 18:25
  * *****************************************
  */
-@XmlRootElement(name = "excel-mapping",namespace = "http://jr.jd.com/schema/excel-mapping")
+@XmlRootElement(name = "excel",namespace = "http://jr.jd.com/schema/excel-mapping")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ExcelMappingDefinition {
 
     @XmlElement(name="sheet")
     private List<SheetDefinition> sheetDefinitions;
     @XmlAttribute
-    private ExcelVersionEnum version;
+    private ExcelVersionEnum version = ExcelVersionEnum.HSSF;
 
     public List<SheetDefinition> getSheetDefinitions() {
         return sheetDefinitions;

@@ -36,7 +36,7 @@ public class FieldDefinition implements Comparable<FieldDefinition>{
 
     @XmlAttribute
     @XmlJavaTypeAdapter(StringClassTypeAdapter.class)
-    private Class type = null;
+    private Class type = java.lang.String.class;
     @XmlAttribute
     private String format;
 

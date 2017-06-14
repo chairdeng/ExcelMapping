@@ -5,10 +5,7 @@ import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
 import com.jd.jr.data.excel.mapping.utils.JAXBUtils;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * *****************************************
@@ -19,11 +16,17 @@ import java.io.InputStream;
  */
 public class ExcelMappingDefinitionParser {
 
-    public ExcelMappingDefinition parse(File file) throws IOException{
-        InputStream inputStream = new FileInputStream(file);
+    public ExcelMappingDefinition parse(File file){
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            throw new DefinitionException(e.getMessage(),e);
+        }
         return parse(inputStream);
     }
-    public ExcelMappingDefinition parse(InputStream inputStream) throws IOException {
+    public ExcelMappingDefinition parse(InputStream inputStream){
         ExcelMappingDefinition excelMappingDefinition = null;
         try {
             excelMappingDefinition = JAXBUtils.fromXML(inputStream,ExcelMappingDefinition.class);
@@ -33,5 +36,9 @@ public class ExcelMappingDefinitionParser {
         }
         return excelMappingDefinition;
 
+    }
+    public ExcelMappingDefinition parse(String xmlString){
+        InputStream inputStream = new ByteArrayInputStream(xmlString.getBytes());
+        return parse(inputStream);
     }
 }

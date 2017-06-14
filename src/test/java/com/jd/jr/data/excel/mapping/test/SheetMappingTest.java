@@ -26,7 +26,7 @@ public class SheetMappingTest {
     @Before
     public void setUp() throws Exception {
         resultSetConfigFile = new File(getClass().getResource("/resultset-config.xml").getFile());
-        mapConfigFile = new File(getClass().getResource("/map-config.xml").getFile());
+        mapConfigFile = new File(getClass().getResource("/map-config.xml").getFile().replace("%20"," "));
     }
 
     @Test
@@ -57,7 +57,7 @@ public class SheetMappingTest {
             mapList.add(map);
         }
         SheetMapping<Map> sheetMapping = SheetMappingHandler.newInstance(mapConfigFile);
-        File excelFile = new File(this.getClass().getResource("/").getFile()+"out.xlsx");
+        File excelFile = new File(this.getClass().getResource("/").getFile().replace("%20"," ")+"out.xlsx");
         sheetMapping.write(mapList,excelFile);
         List<Map> outList = sheetMapping.read(excelFile);
         Assert.assertEquals(outList.size(),100);

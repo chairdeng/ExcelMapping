@@ -3,7 +3,7 @@
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="http://jr.jd.com/schema/excel-mapping"
             elementFormDefault="qualified" attributeFormDefault="unqualified">
-    <xsd:element name="excel-mapping">
+    <xsd:element name="excel">
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:choice minOccurs="0" maxOccurs="unbounded">
