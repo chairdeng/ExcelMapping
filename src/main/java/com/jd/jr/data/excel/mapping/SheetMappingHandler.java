@@ -229,8 +229,8 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             OutputStream outputStream = new FileOutputStream(file);
             write(beans,outputStream,sheetIndex);
         } catch (FileNotFoundException e) {
-            logger.error("文件不存在",e);
-            throw new MappingException("文件不存在");
+            logger.error("文件不可写入",e);
+            throw new MappingException("文件不可写入");
         }
 
     }
@@ -566,7 +566,8 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             try {
                 fieldValue = Ognl.getValue(fieldDefinition.getName(), context, context.getCurrentObject());
             } catch (OgnlException e) {
-                e.printStackTrace();
+                fieldValue = null;
+                logger.error("解析Ognl错误："+fieldDefinition.getName(),e);
             }
             setCellValue(fieldValue, fieldDefinition, cell);
 
@@ -602,7 +603,8 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             }
             if (fieldValue instanceof Date) {
                 DataFormat dataFormat = workbook.createDataFormat();
-                cellStyle.setDataFormat(dataFormat.getFormat("yyyy-MM-dd hh:mm:ss"));
+                cell.setCellType(Cell.CELL_TYPE_STRING);
+                cellStyle.setDataFormat(dataFormat.getFormat(fieldDefinition.getFormat()==null?"yyyy-MM-dd":fieldDefinition.getFormat()));
                 cell.setCellValue((Date) fieldValue);
             }
             if(fieldValue instanceof Number) {
@@ -651,6 +653,8 @@ public class SheetMappingHandler<E> implements SheetMapping<E> {
             int columnWidth = fieldDefinition.getWidth();
             if(columnWidth>0) {
                 sheet.setColumnWidth(cellIndex, columnWidth * 256);
+            }else {
+                sheet.setColumnWidth(cellIndex,((fieldDefinition.getTitle().length() * 2) + 1) * 256);
             }
             cellIndex++;
         }

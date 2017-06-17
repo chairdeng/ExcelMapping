@@ -1,6 +1,7 @@
 package com.jd.jr.data.excel.mapping.config;
 
 import com.jd.jr.data.excel.mapping.definition.ExcelMappingDefinition;
+import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
 import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
 import com.jd.jr.data.excel.mapping.utils.JAXBUtils;
 
@@ -33,6 +34,9 @@ public class ExcelMappingDefinitionParser {
         } catch (Exception e) {
             e.printStackTrace();
             throw new DefinitionException(e.getMessage(),e);
+        }
+        for(SheetDefinition sheetDefinition:excelMappingDefinition.getSheetDefinitions()){
+            sheetDefinition.parseFormatter();
         }
         return excelMappingDefinition;
 

@@ -31,6 +31,7 @@ public class ExcelMappingHandler<E> implements ExcelMapping<E> {
     public void write(ExcelData<E> excelData, Workbook workbook) {
         List<SheetDefinition> sheetDefinitions = excelMappingDefinition.getSheetDefinitions();
         for(SheetDefinition sheetDefinition:sheetDefinitions){
+            sheetDefinition.setVersion(excelMappingDefinition.getVersion());
             SheetMapping sheetMapping = SheetMappingHandler.newInstance(sheetDefinition);
             List<E> beans  = excelData.getSheetBeans(sheetDefinition.getId());
             if(beans != null){
@@ -52,7 +53,7 @@ public class ExcelMappingHandler<E> implements ExcelMapping<E> {
             write(excelData,new FileOutputStream(file));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            throw new MappingException("文件不存在");
+            throw new MappingException("另一个程序正在使用此文件，进程无法访问。");
         }
     }
 

@@ -2,6 +2,9 @@ package com.jd.jr.data.excel.mapping.definition;
 
 import com.jd.jr.data.excel.mapping.config.StringClassTypeAdapter;
 import com.jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
+import com.jd.jr.data.excel.mapping.exceptions.DefinitionException;
+import com.jd.jr.data.excel.mapping.exceptions.FormatterException;
+import com.jd.jr.data.excel.mapping.format.FieldMappingFormatter;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -137,5 +140,27 @@ public class SheetDefinition {
 
     public void setOrdinal(int ordinal) {
         this.ordinal = ordinal;
+    }
+
+    public void parseFormatter(){
+        List<FieldDefinition> fieldDefinitions = this.getFieldDefinitions();
+        for(FieldDefinition fieldDefinition:fieldDefinitions){
+            try {
+                Class<?> formatterClass = fieldDefinition.getFormatter();
+                if(formatterClass != null && FieldMappingFormatter.class.isAssignableFrom(formatterClass)) {
+                    FieldMappingFormatter formatter = (FieldMappingFormatter) fieldDefinition.getFormatter().newInstance();
+                    try {
+                        fieldDefinition.setFormatterInstance(formatter.initialize(fieldDefinition));
+                    } catch (FormatterException e) {
+                        e.printStackTrace();
+                        throw new DefinitionException("配置错误，定义的Formatter错误！");
+                    }
+                }
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

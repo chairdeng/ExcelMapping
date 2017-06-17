@@ -42,7 +42,7 @@ public class FieldDefinition implements Comparable<FieldDefinition>{
 
     @XmlAttribute(name = "formatter",required = true)
     @XmlJavaTypeAdapter(StringClassTypeAdapter.class)
-    private Class formatter = SimpleFieldMappingFormatter.class;
+    private Class formatter;
 
     @XmlTransient
     private FieldMappingFormatter formatterInstance;

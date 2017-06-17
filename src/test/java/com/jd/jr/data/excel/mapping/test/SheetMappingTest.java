@@ -35,7 +35,7 @@ public class SheetMappingTest {
     }
     @Test
     public void testMapList() throws IOException, InvalidFormatException {
-        List<Map> mapList = new ArrayList<Map>();
+        List<Map<String,Object>> mapList = new ArrayList<Map<String,Object>>();
         Map map;
         for (int i=0;i<100;i++){
             map = new HashMap();
@@ -56,10 +56,10 @@ public class SheetMappingTest {
             map.put("Boolean",new Boolean(i % 2 == 0));
             mapList.add(map);
         }
-        SheetMapping<Map> sheetMapping = SheetMappingHandler.newInstance(mapConfigFile);
-        File excelFile = new File(this.getClass().getResource("/").getFile().replace("%20"," ")+"out.xlsx");
+        SheetMapping<Map<String,Object>> sheetMapping = SheetMappingHandler.newInstance(mapConfigFile);
+        File excelFile = new File("d://new.xlsx");
         sheetMapping.write(mapList,excelFile);
-        List<Map> outList = sheetMapping.read(excelFile);
+        List<Map<String,Object>> outList = sheetMapping.read(excelFile);
         Assert.assertEquals(outList.size(),100);
     }
     @Test

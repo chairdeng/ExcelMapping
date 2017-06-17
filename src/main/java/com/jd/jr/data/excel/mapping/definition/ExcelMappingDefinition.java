@@ -19,7 +19,7 @@ public class ExcelMappingDefinition {
     @XmlElement(name="sheet")
     private List<SheetDefinition> sheetDefinitions;
     @XmlAttribute
-    private ExcelVersionEnum version = ExcelVersionEnum.HSSF;
+    private ExcelVersionEnum version = ExcelVersionEnum.XSSF;
 
     public List<SheetDefinition> getSheetDefinitions() {
         return sheetDefinitions;

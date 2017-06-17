@@ -45,7 +45,7 @@ public class SheetDefinitionParser {
             throw new DefinitionException(e.getMessage(),e);
         }
         validate(sheetDefinition);
-        parseFormatter(sheetDefinition);
+        sheetDefinition.parseFormatter();
         return sheetDefinition;
     }
 
@@ -112,28 +112,8 @@ public class SheetDefinitionParser {
         if(sheetDefinition.getFieldDefinitions() == null || sheetDefinition.getFieldDefinitions().size()==0){
             throw new DefinitionException("注解配置错误，不能从该类中获取有效的字段定义！");
         }
-        parseFormatter(sheetDefinition);
+        sheetDefinition.parseFormatter();
         return sheetDefinition;
     }
-    private void parseFormatter(SheetDefinition sheetDefinition){
-        List<FieldDefinition> fieldDefinitions = sheetDefinition.getFieldDefinitions();
-        for(FieldDefinition fieldDefinition:fieldDefinitions){
-            try {
-                Class<?> formatterClass = fieldDefinition.getFormatter();
-                if(FieldMappingFormatter.class.isAssignableFrom(formatterClass)) {
-                    FieldMappingFormatter formatter = (FieldMappingFormatter) fieldDefinition.getFormatter().newInstance();
-                    try {
-                        fieldDefinition.setFormatterInstance(formatter.initialize(fieldDefinition));
-                    } catch (FormatterException e) {
-                        e.printStackTrace();
-                        throw new DefinitionException("配置错误，定义的Formatter错误！");
-                    }
-                }
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+
 }

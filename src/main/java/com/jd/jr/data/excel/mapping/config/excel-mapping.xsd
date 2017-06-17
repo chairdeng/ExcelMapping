@@ -46,7 +46,7 @@
                                 </xsd:annotation>
                             </xsd:attribute>
                             <xsd:attribute name="format" type="xsd:string"/>
-                            <xsd:attribute name="fomatter" type="xsd:string" default="com.jd.jr.data.excel.mapping.format.SimpleFieldMappingFormatter">
+                            <xsd:attribute name="formatter" type="xsd:string" default="com.jd.jr.data.excel.mapping.format.SimpleFieldMappingFormatter">
                                 <xsd:annotation>
                                     <xsd:documentation source="java:java.lang.Class">
                                         <![CDATA[
