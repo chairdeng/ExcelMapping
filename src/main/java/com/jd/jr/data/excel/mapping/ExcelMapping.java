@@ -1,6 +1,7 @@
 package com.jd.jr.data.excel.mapping;
 
 import com.jd.jr.data.excel.mapping.entity.ExcelData;
+import com.jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.File;
@@ -36,4 +37,9 @@ public interface ExcelMapping<E> {
      * @param file 写入的目标文件
      */
     void write(ExcelData<E> excelData,File file);
+
+    /**
+     * 获得Excel的版本
+     */
+    ExcelVersionEnum getExcelVersion();
 }

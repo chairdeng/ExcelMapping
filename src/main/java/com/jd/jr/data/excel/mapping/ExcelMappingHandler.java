@@ -4,6 +4,7 @@ import com.jd.jr.data.excel.mapping.config.ExcelMappingDefinitionParser;
 import com.jd.jr.data.excel.mapping.definition.ExcelMappingDefinition;
 import com.jd.jr.data.excel.mapping.definition.SheetDefinition;
 import com.jd.jr.data.excel.mapping.entity.ExcelData;
+import com.jd.jr.data.excel.mapping.enums.ExcelVersionEnum;
 import com.jd.jr.data.excel.mapping.exceptions.MappingException;
 import com.jd.jr.data.excel.mapping.utils.ExcelUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -55,6 +56,14 @@ public class ExcelMappingHandler<E> implements ExcelMapping<E> {
             e.printStackTrace();
             throw new MappingException("另一个程序正在使用此文件，进程无法访问。");
         }
+    }
+
+    /**
+     * 获得Excel的版本
+     */
+    @Override
+    public ExcelVersionEnum getExcelVersion() {
+        return excelMappingDefinition.getVersion();
     }
 
     public static <E> ExcelMapping<E> newInstance(ExcelMappingDefinition excelMappingDefinition) {
